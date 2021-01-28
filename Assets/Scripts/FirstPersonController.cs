@@ -22,7 +22,8 @@ public class FirstPersonController : MonoBehaviour {
 
     Transform cameraT;
 
-    bool grounded;
+    [HideInInspector]
+    public bool grounded;
     bool cursorIsLocked;
 
     private void Awake() {
@@ -76,5 +77,9 @@ public class FirstPersonController : MonoBehaviour {
 
     void FixedUpdate() {
         rigidBody.MovePosition(rigidBody.position + transform.TransformDirection(moveAmount) * Time.fixedDeltaTime);
+    }
+
+    public float getSpeed() {
+        return moveAmount.magnitude;
     }
 }
