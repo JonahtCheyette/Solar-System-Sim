@@ -13,4 +13,11 @@ public class GravityAttractor : MonoBehaviour {
         body.rotation = Quaternion.FromToRotation(bodyDown, targetDirection) * body.rotation;
         rigidBody.AddForce(targetDirection * gravity);
     }
+
+    public void Orient(Transform body) {
+        Vector3 targetDirection = (transform.position - body.position).normalized;
+        Vector3 bodyDown = -body.up;
+        //rotate the body so that its down points torwards the planet
+        body.rotation = Quaternion.FromToRotation(bodyDown, targetDirection) * body.rotation;
+    }
 }
