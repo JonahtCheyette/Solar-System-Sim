@@ -37,10 +37,10 @@ BlendTree:
   m_Name: Blend Tree
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: -3100369314251171874, guid: 11f1ac6c3b58493479066fe6d6018383,
+    m_Motion: {fileID: 5522812681064789136, guid: 11f1ac6c3b58493479066fe6d6018383,
       type: 3}
     m_Threshold: 0
-    m_Position: {x: 0, y: 0}
+    m_Position: {x: 0, y: 1}
     m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: Blend
@@ -48,28 +48,55 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: 2667949614841947897, guid: 11f1ac6c3b58493479066fe6d6018383,
       type: 3}
-    m_Threshold: 0.5
+    m_Threshold: 0.2
+    m_Position: {x: 0, y: 0.5}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: Blend
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: -7131884877792334275, guid: 11f1ac6c3b58493479066fe6d6018383,
+      type: 3}
+    m_Threshold: 0.4
+    m_Position: {x: -1, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: speedPercent
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: -7117664298175174903, guid: 11f1ac6c3b58493479066fe6d6018383,
+      type: 3}
+    m_Threshold: 0.6
+    m_Position: {x: 1, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: speedPercent
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: -3100369314251171874, guid: 11f1ac6c3b58493479066fe6d6018383,
+      type: 3}
+    m_Threshold: 0.8
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: Blend
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 5522812681064789136, guid: 11f1ac6c3b58493479066fe6d6018383,
+    m_Motion: {fileID: 870255169028935036, guid: 11f1ac6c3b58493479066fe6d6018383,
       type: 3}
     m_Threshold: 1
-    m_Position: {x: 0, y: 0}
+    m_Position: {x: 0, y: -1}
     m_TimeScale: 1
     m_CycleOffset: 0
-    m_DirectBlendParameter: Blend
+    m_DirectBlendParameter: forward
     m_Mirror: 0
-  m_BlendParameter: speedPercent
-  m_BlendParameterY: Blend
+  m_BlendParameter: right
+  m_BlendParameterY: forward
   m_MinThreshold: 0
   m_MaxThreshold: 1
   m_UseAutomaticThresholds: 1
   m_NormalizedBlendValues: 0
-  m_BlendType: 0
+  m_BlendType: 3
 --- !u!1101 &-3139899467080086491
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -129,18 +156,24 @@ AnimatorController:
   m_Name: Astronaut Animator
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: speedPercent
+  - m_Name: forward
     m_Type: 1
-    m_DefaultFloat: 0
+    m_DefaultFloat: 1
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   - m_Name: grounded
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
+  - m_Name: right
+    m_Type: 1
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer

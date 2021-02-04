@@ -16,8 +16,9 @@ public class CharacterAnimator : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        float speedPercent = controller.getSpeed() / controller.runSpeed;
-        animator.SetFloat("speedPercent", speedPercent, locomotionAnimationSmoothTime, Time.deltaTime);
+        Vector2 inputs = controller.getSpeed() / controller.runSpeed;
+        animator.SetFloat("forward", inputs.y, locomotionAnimationSmoothTime, Time.deltaTime);
+        animator.SetFloat("right", inputs.x, locomotionAnimationSmoothTime, Time.deltaTime);
         animator.SetBool("grounded", controller.grounded);
     }
 }

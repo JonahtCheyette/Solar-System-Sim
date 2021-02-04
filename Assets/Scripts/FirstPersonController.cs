@@ -92,7 +92,7 @@ public class FirstPersonController : MonoBehaviour {
         rigidBody.MovePosition(rigidBody.position + transform.TransformDirection(moveAmount) * Time.fixedDeltaTime);
     }
 
-    public float getSpeed() {
-        return moveAmount.magnitude;
+    public Vector2 getSpeed() {
+        return new Vector2(moveAmount.x, moveAmount.z);
     }
 }
