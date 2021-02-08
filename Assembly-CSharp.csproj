@@ -64,11 +64,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\CelestialBody.cs" />
     <Compile Include="Assets\Scripts\CharacterAnimator.cs" />
+    <Compile Include="Assets\Scripts\DoorAnimator.cs" />
     <Compile Include="Assets\Scripts\FirstPersonController.cs" />
-    <Compile Include="Assets\Scripts\GravityAttractor.cs" />
-    <Compile Include="Assets\Scripts\GravityBody.cs" />
-    <Compile Include="Assets\Scripts\TestAnimation.cs" />
+    <Compile Include="Assets\Scripts\PlayerGravity.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.3f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

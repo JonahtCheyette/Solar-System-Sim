@@ -570,7 +570,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1761671402}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.96, z: 0}
+  m_LocalPosition: {x: 0, y: 20.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 253178429}
@@ -601,6 +601,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfbe6beda2e56448b189c92f680aff9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mass: 1
 --- !u!54 &1761671406
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -674,8 +675,8 @@ GameObject:
   - component: {fileID: 1920399975}
   - component: {fileID: 1920399979}
   m_Layer: 8
-  m_Name: Sphere
-  m_TagString: Planet
+  m_Name: Planet
+  m_TagString: Celestial Body
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -748,7 +749,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920399974}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -30.46, z: 0}
+  m_LocalPosition: {x: 0, y: -9.8, z: 0}
   m_LocalScale: {x: 50, y: 50, z: 50}
   m_Children: []
   m_Father: {fileID: 0}
@@ -766,4 +767,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63503fff2487aae409ceddc562937bed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravity: 10
+  mass: 5000
