@@ -44,7 +44,11 @@ public class PlayerGravity : MonoBehaviour {
     private void DoGravity() {
         foreach(CelestialBody planet in planets) {
             Vector3 targetDirection = (planet.transform.position - transform.position).normalized;
-            rigidBody.AddForce(targetDirection * (CelestialBody.gravityStrength * mass * planet.mass) / (transform.position - planet.transform.position).sqrMagnitude);
+            rigidBody.AddForce(targetDirection * (Universe.gravitationalConstant * mass * planet.mass) / (transform.position - planet.transform.position).sqrMagnitude);
         }
+    }
+
+    public float GetMass() {
+        return rigidBody.mass;
     }
 }

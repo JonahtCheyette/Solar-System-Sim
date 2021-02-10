@@ -2,29 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
+[RequireComponent(typeof(Rigidbody))]
 public class CelestialBody : MonoBehaviour {
-    public const float gravityStrength = 1;
+    Rigidbody rb;
 
-    public float mass;
+    public float radius;
+    public float surfaceGravity;
+    public Vector3 initialVelocity;
+    public Vector3 velocity { get; private set; }
+    public float mass { get; private set; }
 
-    private CelestialBody[] bodies;
-
-    public void Start() {
-        List<CelestialBody> temp = new List<CelestialBody>();
-        bodies = FindObjectsOfType<CelestialBody>();
-        for(int i = bodies.Length - 1; i >= 0; i--) {
-            if(bodies[i] != this) {
-                temp.Add(bodies[i]);
-            }
-        }
-        bodies = temp.ToArray();
+    public void Awake() {
+        rb = GetComponent<Rigidbody>();
+        rb.mass = mass;
+        velocity = initialVelocity;
+        rb.useGravity = false;
+        //keeps the rigidbody from doing its own rotation
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
-    /*
-    public void AttractPlayer(Transform body, Rigidbody rigidBody, float playerMass) {
-        Vector3 targetDirection = (transform.position - body.position).normalized;
-        Vector3 bodyDown = -body.up;
-        //rotate the body so that its down points torwards the planet
-        body.rotation = Quaternion.FromToRotation(bodyDown, targetDirection) * body.rotation;
-        rigidBody.AddForce(targetDirection * (gravityStrength * mass * playerMass)/(body.position - transform.position).sqrMagnitude);
-    }*/
+
+    public void UpdateVelocity(Vector3 acceleration, float timeStep) {
+        velocity += acceleration * timeStep;
+    }
+
+    public void UpdatePosition(float timeStep) {
+        rb.MovePosition(rb.position + velocity * timeStep);
+    }
+
+    public void OnValidate() {
+        mass = (surfaceGravity * radius * radius) / Universe.gravitationalConstant;
+        transform.localScale = Vector3.one * radius;
+    }
+
+    public Vector3 Position {
+        get {
+            return rb.position;
+        }
+    }
+
+    public Rigidbody Rigidbody {
+        get {
+            return Rigidbody;
+        }
+    }
 }

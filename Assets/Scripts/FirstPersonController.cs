@@ -10,8 +10,6 @@ public class FirstPersonController : MonoBehaviour {
     public float walkSpeed = 5f;
     public float runSpeed = 10f;
     public float jumpForce = 220f;
-    public float cameraY = 3;
-    public float cameraZ = 0;
 
     //decides what counts as things the player can be grounded on
     public LayerMask groundedMask;
