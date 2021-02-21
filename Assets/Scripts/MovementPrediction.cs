@@ -6,41 +6,39 @@ using UnityEngine;
 public class MovementPrediction : MonoBehaviour {
     [Min(0)]
     public int numSteps;
-    public float width;
     public bool autoUpdate;
     public CelestialBody relativeTo;
     public bool isRelative;
 
     private int relativeIndex;
     private CelestialBodyData[] bodies;
+    private Color[] celestialBodyColors;
     private Vector3[][] points;
-    private LineRenderer[] renderers;
 
     void Initialize() {
         CelestialBody[] tempBodies = FindObjectsOfType<CelestialBody>();
         bodies = new CelestialBodyData[tempBodies.Length];
-        renderers = new LineRenderer[tempBodies.Length];
+        celestialBodyColors = new Color[tempBodies.Length];
         for(int i = 0; i < tempBodies.Length; i++) {
             bodies[i] = new CelestialBodyData(tempBodies[i]);
-            renderers[i] = tempBodies[i].GetComponent<LineRenderer>();
             if (isRelative && relativeTo != null) {
                 if(tempBodies[i] == relativeTo) {
                     relativeIndex = i;
                 }
             }
+
+            celestialBodyColors[i] = tempBodies[i].gameObject.GetComponent<MeshRenderer>().sharedMaterial.color;
         }
         points = new Vector3[bodies.Length][];
     }
 
     private void Update() {
-        if (!Application.isPlaying) {
-            if (autoUpdate) {
+        if (autoUpdate) {
+            if (!Application.isPlaying) {
                 Initialize();
                 Simulate();
                 DrawPaths();
             }
-        } else {
-            DeletePaths();
         }
     }
 
@@ -88,19 +86,9 @@ public class MovementPrediction : MonoBehaviour {
 
     private void DrawPaths() {
         for (int i = 0; i < bodies.Length; i++) {
-            renderers[i].enabled = true;
-            renderers[i].positionCount = points[i].Length;
-            renderers[i].SetPositions(points[i]);
-            renderers[i].widthMultiplier = width;
-        }
-    }
-
-    private void DeletePaths() {
-        CelestialBody[] tempBodies = FindObjectsOfType<CelestialBody>();
-        for (int i = 0; i < tempBodies.Length; i++) {
-            LineRenderer renderer = tempBodies[i].GetComponent<LineRenderer>();
-            renderer.enabled = false;
-            renderer.positionCount = 0;
+            for (int j = 1; j < points[i].Length; j++) {
+                Debug.DrawLine(points[i][j - 1], points[i][j], celestialBodyColors[i]);
+            }
         }
     }
 
