@@ -70,8 +70,11 @@
     <Compile Include="Assets\Scripts\FirstPersonController.cs" />
     <Compile Include="Assets\Scripts\GravityHandler.cs" />
     <Compile Include="Assets\Scripts\MovementPrediction.cs" />
+    <Compile Include="Assets\Scripts\PlanetGradientDataPasser.cs" />
     <Compile Include="Assets\Scripts\PlayerGravity.cs" />
+    <Compile Include="Assets\Scripts\StarShaderDataPasser.cs" />
     <Compile Include="Assets\Scripts\Universe.cs" />
+    <None Include="Assets\Scripts\Shaders\PlanetGradientShader.shader" />
     <None Include="Assets\Scripts\Shaders\Star.shader" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.3f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>

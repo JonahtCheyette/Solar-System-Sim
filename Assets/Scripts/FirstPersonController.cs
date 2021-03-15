@@ -22,7 +22,6 @@ public class FirstPersonController : MonoBehaviour {
     Vector3 smoothMoveVelocity;
 
     Transform cameraT;
-    Animator animator;
 
     [HideInInspector]
     public bool grounded;
@@ -37,7 +36,6 @@ public class FirstPersonController : MonoBehaviour {
     void Start() {
         cameraT = Camera.main.transform;
         rigidBody = GetComponentInChildren<Rigidbody>();
-        animator = GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
