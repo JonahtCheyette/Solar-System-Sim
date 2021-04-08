@@ -1,9 +1,5 @@
 ﻿Shader "Unlit/PlanetGradientShader"
 {
-    Properties
-    {
-        _Color ("Color", Color) = (1, 1, 1, 1)
-    }
     SubShader
     {
         Tags { "RenderType"="Opaque" }
@@ -28,7 +24,7 @@
                 float3 worldPos : TEXCOORD0;
             };
 
-            fixed4 _Color;
+            fixed4 color;
             float minY;
             float maxY;
 
@@ -40,7 +36,7 @@
             }
 
             fixed4 frag(v2f i) : SV_Target{
-                fixed4 col = lerp(fixed4(0,0,0,1), _Color, (i.worldPos.y - minY) / (maxY - minY));
+                fixed4 col = lerp(fixed4(0,0,0,1), color, (i.worldPos.y - minY) / (maxY - minY));
                 return col;
             }
             ENDCG
