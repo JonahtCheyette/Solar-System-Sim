@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Test
+  m_Name: PlanetGradient
   m_Shader: {fileID: 4800000, guid: 305a18723224e4344a30a5f998664eec, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
