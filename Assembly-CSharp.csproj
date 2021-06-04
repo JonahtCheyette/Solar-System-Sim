@@ -64,10 +64,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\3rd Party\Bloom.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Animation\CharacterAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Animation\DoorAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Controls\FirstPersonController.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Controls\PlayerGravity.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\HUD\PlanetMouseoverHUD.cs" />
     <Compile Include="Assets\Scripts\Looks\MovementPrediction.cs" />
     <Compile Include="Assets\Scripts\Looks\PlanetGradientDataPasser.cs" />
     <Compile Include="Assets\Scripts\Looks\PlanetTrail.cs" />
@@ -76,6 +78,8 @@
     <Compile Include="Assets\Scripts\Physics\GravityHandler.cs" />
     <Compile Include="Assets\Scripts\Physics\Universe.cs" />
     <None Include="Assets\Scripts\Shaders\PlanetGradientShader.shader" />
+    <None Include="Assets\Scripts\3rd Party\Shader\Bloom.shader" />
+    <None Include="Assets\Scripts\3rd Party\Shader\Bloom.cginc" />
     <None Include="Assets\Scripts\Shaders\Star.shader" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.3f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -615,37 +619,37 @@
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.3f1/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline.Editor">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.VSCode.Editor">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Postprocessing.Editor">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Postprocessing.Editor.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Postprocessing.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Rider.Editor">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Postprocessing.Runtime">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Postprocessing.Runtime.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.Postprocessing.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.UI">
-      <HintPath>C:/Users/jonah/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+      <HintPath>C:/Users/jonah/OneDrive/Documents/Unity Projects/Solar System Sim/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup></ItemGroup>
