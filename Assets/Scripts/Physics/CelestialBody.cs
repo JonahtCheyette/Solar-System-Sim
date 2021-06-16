@@ -5,7 +5,7 @@ using UnityEngine;
 [ExecuteInEditMode]
 [RequireComponent(typeof(Rigidbody))]
 public class CelestialBody : MonoBehaviour {
-    Rigidbody rb;
+    private Rigidbody rb;
 
     public float radius;
     public float surfaceGravity;
@@ -33,7 +33,7 @@ public class CelestialBody : MonoBehaviour {
 
     public void OnValidate() {
         mass = (surfaceGravity * radius * radius) / Universe.gravitationalConstant;
-        transform.localScale = Vector3.one * radius;
+        transform.localScale = Vector3.one * radius * 2;
     }
 
     public Vector3 Position {
@@ -42,9 +42,9 @@ public class CelestialBody : MonoBehaviour {
         }
     }
 
-    public Rigidbody Rigidbody {
+    public Rigidbody RigidBody {
         get {
-            return Rigidbody;
+            return rb;
         }
     }
 }

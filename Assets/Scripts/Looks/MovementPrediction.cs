@@ -7,27 +7,26 @@ public class MovementPrediction : MonoBehaviour {
     [Min(0)]
     public int numSteps;
     public bool autoUpdate;
-    public CelestialBody relativeTo;
     public bool isRelative;
+    public CelestialBody relativeTo;
+    public bool useDefaultTimeStep;
+    public float customTimeStep;
 
     private int relativeIndex;
     private CelestialBodyData[] bodies;
-    private Color[] celestialBodyColors;
     private Vector3[][] points;
 
     void Initialize() {
         CelestialBody[] tempBodies = FindObjectsOfType<CelestialBody>();
         bodies = new CelestialBodyData[tempBodies.Length];
-        celestialBodyColors = new Color[tempBodies.Length];
+        float timeStep = useDefaultTimeStep ? Universe.physicsTimeStep : customTimeStep;
         for(int i = 0; i < tempBodies.Length; i++) {
-            bodies[i] = new CelestialBodyData(tempBodies[i]);
+            bodies[i] = new CelestialBodyData(tempBodies[i], timeStep);
             if (isRelative && relativeTo != null) {
                 if(tempBodies[i] == relativeTo) {
                     relativeIndex = i;
                 }
             }
-
-            celestialBodyColors[i] = tempBodies[i].gameObject.GetComponent<MeshRenderer>().sharedMaterial.color;
         }
         points = new Vector3[bodies.Length][];
     }
@@ -87,7 +86,7 @@ public class MovementPrediction : MonoBehaviour {
     private void DrawPaths() {
         for (int i = 0; i < bodies.Length; i++) {
             for (int j = 1; j < points[i].Length; j++) {
-                Debug.DrawLine(points[i][j - 1], points[i][j], celestialBodyColors[i]);
+                Debug.DrawLine(points[i][j - 1], points[i][j], bodies[i].color);
             }
         }
     }
@@ -107,24 +106,29 @@ public class MovementPrediction : MonoBehaviour {
     }
 
     private struct CelestialBodyData {
-        public float mass;
-        public float radius;
-        public Vector3 position;
-        Vector3 velocity;
+        public float mass { get; private set; }
+        public float radius { get; private set; }
+        public Vector3 position { get; private set; }
+        public Color color;
+        private Vector3 velocity;
+        private float timeStep;
 
-        public CelestialBodyData(CelestialBody cb) {
+        public CelestialBodyData(CelestialBody cb, float physTimeStep) {
             mass = cb.mass;
             radius = cb.radius;
             position = cb.Position;
             velocity = cb.initialVelocity;
+            timeStep = physTimeStep;
+            color = cb.color;
+            color.a = 1f;
         }
 
         public void UpdateVelocity(Vector3 acceleration) {
-            velocity += acceleration * Universe.physicsTimeStep;
+            velocity += acceleration * timeStep;
         }
 
         public void UpdatePosition() {
-            position += velocity * Universe.physicsTimeStep;
+            position += velocity * timeStep;
         }
     }
 }

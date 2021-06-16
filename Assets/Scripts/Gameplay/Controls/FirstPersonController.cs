@@ -5,6 +5,8 @@ using UnityEditor;
 
 public class FirstPersonController : MonoBehaviour {
 
+    public CelestialBody startingPlanet;
+
     public float mouseSensitivityX = 250f;
     public float mouseSensitivityY = 250f;
     public float walkSpeed = 5f;
@@ -14,18 +16,20 @@ public class FirstPersonController : MonoBehaviour {
     //decides what counts as things the player can be grounded on
     public LayerMask groundedMask;
 
-    Rigidbody rigidBody;
+    private Rigidbody rigidBody;
 
-    float verticalLookRotation;
+    private float verticalLookRotation;
 
-    Vector3 moveAmount;
-    Vector3 smoothMoveVelocity;
+    private Vector3 moveAmount;
+    private Vector3 smoothMoveVelocity;
 
-    Transform cameraT;
+    private Transform cameraT;
 
-    [HideInInspector]
-    public bool grounded;
-    bool cursorIsLocked;
+    private bool grounded;
+    private bool cursorIsLocked;
+    private Vector3 groundVelocity;
+
+    private Vector3 targetMoveAmount;
 
     private void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -36,11 +40,57 @@ public class FirstPersonController : MonoBehaviour {
     void Start() {
         cameraT = Camera.main.transform;
         rigidBody = GetComponentInChildren<Rigidbody>();
+        FindStartingPosition();
     }
 
     // Update is called once per frame
     void Update() {
-        Vector3 targetMoveAmount = new Vector3();
+        GetMovementInput();
+        DoFriction();
+        Jump();
+        CheckIfGrounded();
+        CheckCursorLockState();
+    }
+
+    private void FixedUpdate() {
+        rigidBody.position += transform.TransformDirection(moveAmount) * Time.fixedDeltaTime;
+    }
+
+    public Vector2 getSpeed() {
+        return new Vector2(moveAmount.x, moveAmount.z);
+    }
+
+    private void CheckCursorLockState() {
+        //changing whether the cursor is locked to the center of the screen
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            cursorIsLocked = false;
+        }
+        if (Input.GetMouseButtonDown(0) && Input.mousePosition.x >= 0 && Input.mousePosition.y >= 0 && Input.mousePosition.x <= Handles.GetMainGameViewSize().x && Input.mousePosition.y <= Handles.GetMainGameViewSize().y) {
+            cursorIsLocked = true;
+        }
+    }
+
+    private void CheckIfGrounded() {
+        grounded = false;
+        Ray ray = new Ray(transform.position, -transform.up);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 0.05f, groundedMask)) {
+            grounded = true;
+            groundVelocity = transform.InverseTransformDirection(hit.rigidbody.GetPointVelocity(hit.point) - rigidBody.velocity);
+        } else {
+            groundVelocity = Vector3.zero;
+        }
+    }
+
+    private void DoFriction() {
+        if (grounded) {
+            //friction with ground
+            moveAmount = Vector3.SmoothDamp(moveAmount, groundVelocity, ref smoothMoveVelocity, 1/groundVelocity.sqrMagnitude);
+        }
+    }
+
+    private void GetMovementInput() {
+        targetMoveAmount = Vector3.zero;
         if (cursorIsLocked) {
             //rotating on the horizontal axis
             transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Time.deltaTime * mouseSensitivityX);
@@ -48,7 +98,6 @@ public class FirstPersonController : MonoBehaviour {
             verticalLookRotation += Input.GetAxis("Mouse Y") * Time.deltaTime * mouseSensitivityY;
             verticalLookRotation = Mathf.Clamp(verticalLookRotation, -60, 60);
             cameraT.localEulerAngles = Vector3.left * verticalLookRotation + new Vector3(0, 180, 0);
-
 
             //capturing movement input
             Vector3 moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
@@ -61,34 +110,32 @@ public class FirstPersonController : MonoBehaviour {
             }
         }
         moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, 0.15f);
+    }
 
-        //jumping
-        if (Input.GetButtonDown("Jump") && grounded) {
+    private void Jump() {
+        if (Input.GetKeyDown(KeyCode.Space) && grounded) {
             rigidBody.AddForce(transform.up * jumpForce);
         }
-
-        //figure out if we're grounded
-        grounded = false;
-        Ray ray = new Ray(transform.position, -transform.up);
-        RaycastHit hit;
-        if(Physics.Raycast(ray, out hit, 2.8f, groundedMask)) {
-            grounded = true;
-        }
-
-        //changing whether the cursor is locked to the center of the screen
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            cursorIsLocked = false;
-        }
-        if (Input.GetMouseButtonDown(0) && Input.mousePosition.x >= 0 && Input.mousePosition.y >= 0 && Input.mousePosition.x <= Handles.GetMainGameViewSize().x && Input.mousePosition.y <= Handles.GetMainGameViewSize().y) {
-            cursorIsLocked = true;
-        }
     }
 
-    void FixedUpdate() {
-        rigidBody.MovePosition(rigidBody.position + transform.TransformDirection(moveAmount) * Time.fixedDeltaTime);
+    private void FindStartingPosition() {
+        Vector3 dirFromPlanetToPlayer = (transform.position - startingPlanet.Position).normalized;
+        rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (0.1f + startingPlanet.radius);
+        rigidBody.velocity = startingPlanet.initialVelocity;
+
+        Vector3 targetDirection = (startingPlanet.transform.position - transform.position).normalized;
+        //rotate so that the player's down points torwards the planet
+        transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
+
+        ShipPhysics spaceShip = FindObjectOfType<ShipPhysics>();
+        spaceShip.transform.position = rigidBody.position + transform.right * 6;
+        spaceShip.transform.rotation = Quaternion.FromToRotation(-spaceShip.transform.up, targetDirection);
+        spaceShip.RigidBody.velocity = startingPlanet.initialVelocity;
     }
 
-    public Vector2 getSpeed() {
-        return new Vector2(moveAmount.x, moveAmount.z);
+    public bool Grounded {
+        get {
+            return grounded;
+        }
     }
 }

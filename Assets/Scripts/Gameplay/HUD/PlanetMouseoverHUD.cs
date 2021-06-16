@@ -9,59 +9,86 @@ public class PlanetMouseoverHUD : MonoBehaviour {
     //cirlce and arrow are yellow if not locked on, blue if locked on (need to think about color choice)
     //white text at top saying name of planet, distance, relative velocity (on plane perpendicular to direction planet is being viewed on), relative velocity (in the direction the planet is being viewed from, red if planet is going further away, blue otherwise)
     //need a more elegant system for relative velocity than the 2 numbers
+    public Color lockedOnColor = Color.blue;
+    public Color regularColor = Color.yellow;
+    
     public Material Mat;
     [Min(0)]
-    public float thickness;
+    public float displayDistFromSurfaceOfPlanet;
     public int HUDRes = 50;
-    [Range(0, 90)]
-    public float segmentLength;
+    //the range of distances where the HUD will fade out as you approach the planet
+    public Vector2 fadeOutRange;
 
-    Camera cam;
+    Camera playerCam;
     Mesh lockOnMesh;
+
+    MaterialPropertyBlock materialProperties;
 
 
     //make a mesh at the Planet's location, then display it on the screen
     public void DrawPlanetHUD(CelestialBody body) {
-        if (cam == null) {
-            cam = Camera.main;
+        if (materialProperties == null) {
+            materialProperties = new MaterialPropertyBlock();
+        }
+        if (playerCam == null) {
+            playerCam = Camera.main;
         }
         if(lockOnMesh == null) {
             lockOnMesh = new Mesh();
         }
 
         Vector3 bodyPosition = body.transform.position;
-        //since we're drawing the mesh at the actual planet, we need to scale the thickness so it appears the same at any distance
-        float pixelsPerUnit = (cam.WorldToScreenPoint(bodyPosition) - cam.WorldToScreenPoint(bodyPosition + cam.transform.up)).magnitude;
-        float thicknessScaledByDistance = thickness / pixelsPerUnit;
+        //since we're drawing the mesh just behind the actual planet, we need to scale the thickness so it appears the same at any distance
+        Vector3 dirToPlayer = (playerCam.transform.position - bodyPosition).normalized;
+        Vector3 meshPosition = bodyPosition - dirToPlayer * body.radius * 1.2f;
+        float pixelsPerUnit = (playerCam.WorldToScreenPoint(meshPosition) - playerCam.WorldToScreenPoint(meshPosition + playerCam.transform.up)).magnitude;
+        float thicknessScaledByDistance = displayDistFromSurfaceOfPlanet / pixelsPerUnit;
 
-        float innerRadius = body.radius * 1.2f;
-        float outerRadius = innerRadius + thicknessScaledByDistance;
+        float circleRadius = body.radius * 1.2f + thicknessScaledByDistance;
 
-        //num increments is the number of points on either the inside or outside edge of one of the segments of the HUD
-        int numIncrements = Mathf.Max(5, HUDRes);
-        float angleIncrement = segmentLength/(numIncrements-1);
-        Vector3[] verts = new Vector3[2 * numIncrements];
-        int[] tris = new int[6 * (numIncrements - 1)];
+        int numPoints = Mathf.Max(15, HUDRes);
+        float angleIncrement = 2*Mathf.PI/numPoints;
+
+        Vector3[] verts = new Vector3[numPoints];
+        int[] tris = new int[3 * (numPoints - 2)];
+        
         //constructing the mesh
-        for (int i = 0; i < numIncrements; i++) {
-            float pointAngle = (segmentLength / 2f) + (i * angleIncrement) * Mathf.Deg2Rad;
+        for (int i = 0; i < numPoints; i++) {
+            //vertices
+            float pointAngle = i * angleIncrement;
             Vector3 dir = new Vector3(Mathf.Cos(pointAngle), Mathf.Sin(pointAngle));
 
-            verts[i * 2] = dir * innerRadius;
-            verts[i * 2 + 1] = dir * outerRadius;
+            verts[i] = dir * circleRadius;
+        }
 
-            if(i < numIncrements - 1) {
-                tris[i * 6] = i * 2;
-                tris[i * 6 + 1] = i * 2 + 1;
-                tris[i * 6 + 2] = i * 2 + 2;
-
-                tris[i * 6 + 3] = i * 2 + 1;
-                tris[i * 6 + 4] = i * 2 + 2;
-                tris[i * 6 + 5] = i * 2 + 3;
+        //now for triangles
+        //array to hold the vertex indicies in the order, 0, numPoints-1, 1, numPoints-2, 2, numPoints-3 order the triangles will be constructed from
+        int[] orderedVertexIndicies = new int[numPoints];
+        //because we're working with ints, the decimal gets dropped from the result of the division
+        for (int i = 1; i < numPoints/2 + 1; i++) {
+            orderedVertexIndicies[i * 2 - 1] = numPoints - i;
+            if(i * 2 <= numPoints) {
+                orderedVertexIndicies[i * 2] = i;
             }
+        }
+        //creating the triangles
+        for (int i = 0; i < numPoints - 2; i++) {
+            tris[i * 3] = orderedVertexIndicies[i];
+            tris[i * 3 + 1] = orderedVertexIndicies[i + 1];
+            tris[i * 3 + 2] = orderedVertexIndicies[i + 2];
         }
 
         lockOnMesh.vertices = verts;
         lockOnMesh.triangles = tris;
+
+        Quaternion rot = Quaternion.LookRotation(dirToPlayer, playerCam.transform.up);
+
+        float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - bodyPosition).magnitude - body.radius));
+        Color HUDColor = lockedOnColor;
+
+        HUDColor.a = alpha;
+        materialProperties.SetColor("_Color", HUDColor);
+
+        Graphics.DrawMesh(lockOnMesh, meshPosition, rot, Mat, 0, null, 0, materialProperties, false, false, false);
     }
 }

@@ -19,6 +19,6 @@ public class CharacterAnimator : MonoBehaviour {
         Vector2 inputs = controller.getSpeed() / controller.runSpeed;
         animator.SetFloat("forward", inputs.y, locomotionAnimationSmoothTime, Time.deltaTime);
         animator.SetFloat("right", inputs.x, locomotionAnimationSmoothTime, Time.deltaTime);
-        animator.SetBool("grounded", controller.grounded);
+        animator.SetBool("grounded", controller.Grounded);
     }
 }

@@ -68,14 +68,16 @@
     <Compile Include="Assets\Scripts\Gameplay\Animation\CharacterAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Animation\DoorAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Controls\FirstPersonController.cs" />
-    <Compile Include="Assets\Scripts\Gameplay\Controls\PlayerGravity.cs" />
     <Compile Include="Assets\Scripts\Gameplay\HUD\PlanetMouseoverHUD.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Interactions\ShipDoorController.cs" />
     <Compile Include="Assets\Scripts\Looks\MovementPrediction.cs" />
     <Compile Include="Assets\Scripts\Looks\PlanetGradientDataPasser.cs" />
     <Compile Include="Assets\Scripts\Looks\PlanetTrail.cs" />
     <Compile Include="Assets\Scripts\Looks\StarShaderDataPasser.cs" />
     <Compile Include="Assets\Scripts\Physics\CelestialBody.cs" />
     <Compile Include="Assets\Scripts\Physics\GravityHandler.cs" />
+    <Compile Include="Assets\Scripts\Physics\PlayerGravity.cs" />
+    <Compile Include="Assets\Scripts\Physics\ShipPhysics.cs" />
     <Compile Include="Assets\Scripts\Physics\Universe.cs" />
     <None Include="Assets\Scripts\Shaders\PlanetGradientShader.shader" />
     <None Include="Assets\Scripts\3rd Party\Shader\Bloom.shader" />

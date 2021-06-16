@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DoorAnimator : MonoBehaviour {
-    Animator animator;
-    public bool open;
+    private Animator animator;
+    private ShipDoorController controller;
 
     void Start() {
         animator = GetComponent<Animator>();
+        controller = GetComponentInParent<ShipDoorController>();
     }
 
     private void Update() {
-        animator.SetBool("doorIsOpen", open);
+        animator.SetBool("doorIsOpen", controller.open);
     }
 }

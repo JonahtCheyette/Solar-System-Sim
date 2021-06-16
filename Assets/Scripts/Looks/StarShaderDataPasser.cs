@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//this script is unnecessary now that I found the 3rd party bloom script.
+//keeping it here in case I ever decide to do a custom star shader
 [ExecuteAlways]
 public class StarShaderDataPasser : MonoBehaviour {
     [Min(0)]
