@@ -44,7 +44,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: AstronautMaterial
-    second: {fileID: 2100000, guid: 624418ed8145fe74d8d5a740d549c527, type: 2}
+    second: {fileID: 2100000, guid: dd08921ca5ec4d845aefe6107c65daf7, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0

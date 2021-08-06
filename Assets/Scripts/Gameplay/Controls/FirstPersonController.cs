@@ -56,7 +56,7 @@ public class FirstPersonController : MonoBehaviour {
         rigidBody.position += transform.TransformDirection(moveAmount) * Time.fixedDeltaTime;
     }
 
-    public Vector2 getSpeed() {
+    public Vector2 GetGroundSpeed() {
         return new Vector2(moveAmount.x, moveAmount.z);
     }
 
@@ -128,7 +128,7 @@ public class FirstPersonController : MonoBehaviour {
         transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
 
         ShipPhysics spaceShip = FindObjectOfType<ShipPhysics>();
-        spaceShip.transform.position = rigidBody.position + transform.right * 6;
+        spaceShip.transform.position = rigidBody.position + transform.right * 10;
         spaceShip.transform.rotation = Quaternion.FromToRotation(-spaceShip.transform.up, targetDirection);
         spaceShip.RigidBody.velocity = startingPlanet.initialVelocity;
     }
