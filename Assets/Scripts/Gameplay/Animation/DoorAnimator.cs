@@ -12,6 +12,6 @@ public class DoorAnimator : MonoBehaviour {
     }
 
     private void Update() {
-        animator.SetBool("doorIsOpen", controller.open);
+        animator.SetBool("doorIsOpen", controller.isOpen);
     }
 }

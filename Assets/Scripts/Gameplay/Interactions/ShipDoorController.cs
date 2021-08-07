@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ShipDoorController : MonoBehaviour {
-    public bool open;
+    private bool open;
     private BoxCollider doorCollider;
     private BoxCollider rampCollider;
     private GameObject rampObject;
@@ -56,5 +56,16 @@ public class ShipDoorController : MonoBehaviour {
         rampObject.transform.localRotation = Quaternion.Slerp(rampStartRotation, rampFinalRotation, rampStage / 10);
 
         openLastFrame = open;
+        InteractionHandler.AddInteractionIfInRange(ChangeDoorState, open ? "Close Ship Door" : "Open Ship Door", KeyCode.C, transform.position + (transform.rotation * doorCollider.center * transform.localScale.x));
+    }
+
+    public bool isOpen {
+        get {
+            return open;
+        }
+    }
+
+    private void ChangeDoorState() {
+        open = !open;
     }
 }
