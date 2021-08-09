@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 
 public class FirstPersonController : MonoBehaviour {
+    //makes it so the character can walk around on the planets
 
     public CelestialBody startingPlanet;
 
@@ -24,6 +25,8 @@ public class FirstPersonController : MonoBehaviour {
     private Vector3 smoothMoveVelocity;
 
     private Transform cameraT;
+    private Vector3 cameraLocalPosition;
+    private Transform cameraParent;
 
     private bool grounded;
     private bool cursorIsLocked;
@@ -37,14 +40,16 @@ public class FirstPersonController : MonoBehaviour {
     }
 
     // Start is called before the first frame update
-    void Start() {
+    private void Start() {
         cameraT = Camera.main.transform;
+        cameraParent = cameraT.parent;
+        cameraLocalPosition = cameraT.localPosition;
         rigidBody = GetComponentInChildren<Rigidbody>();
         FindStartingPosition();
     }
 
     // Update is called once per frame
-    void Update() {
+    private void Update() {
         GetMovementInput();
         DoFriction();
         Jump();
@@ -58,6 +63,11 @@ public class FirstPersonController : MonoBehaviour {
 
     public Vector2 GetGroundSpeed() {
         return new Vector2(moveAmount.x, moveAmount.z);
+    }
+
+    public void ResetCamera() {
+        cameraT.parent = cameraParent;
+        cameraT.localPosition = cameraLocalPosition;
     }
 
     private void CheckCursorLockState() {
@@ -74,7 +84,8 @@ public class FirstPersonController : MonoBehaviour {
         grounded = false;
         Ray ray = new Ray(transform.position, -transform.up);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 0.05f, groundedMask)) {
+
+        if (Physics.Raycast(ray, out hit, 0.1f, groundedMask)) {
             grounded = true;
             groundVelocity = transform.InverseTransformDirection(hit.rigidbody.GetPointVelocity(hit.point) - rigidBody.velocity);
         } else {
@@ -129,7 +140,7 @@ public class FirstPersonController : MonoBehaviour {
 
         ShipPhysics spaceShip = FindObjectOfType<ShipPhysics>();
         spaceShip.transform.position = rigidBody.position + transform.right * 10;
-        spaceShip.transform.rotation = Quaternion.FromToRotation(-spaceShip.transform.up, targetDirection);
+        spaceShip.transform.rotation *= Quaternion.FromToRotation(-spaceShip.transform.up, targetDirection);
         spaceShip.RigidBody.velocity = startingPlanet.initialVelocity;
     }
 

@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public static class InteractionHandler {
     // Handles keeping track and displaying what the player can interact with
-    private static float minInteractionDistance = 10f;
-
     private static List<Interaction> interactionsInRange = new List<Interaction>();
 
     private static Text interactionText;
@@ -40,13 +38,13 @@ public static class InteractionHandler {
         interactionsInRange.Clear();
     }
 
-    public static void AddInteractionIfInRange(System.Action interact, string interactName, KeyCode interactkey, Vector3 position) {
+    public static void AddInteractionIfInRange(System.Action interact, string interactName, KeyCode interactkey, Vector3 position, float minInteractionRange) {
         // adds the interaction to interactionsInRange if it's within minInteractionRange
         // if there's another interaction that uses the same key, whichever one is closest 
         // will be the one that remains in interactionsInRange
         // Also limits the number of interactions to 3
-        float dist = (position - playerTransform.position).magnitude;
-        if (dist <= minInteractionDistance) {
+        float dist = (playerTransform.position - position).magnitude;
+        if (dist < minInteractionRange) {
             for(int i = 0; i < interactionsInRange.Count; i++) {
                 if (interactionsInRange[i].Key == interactkey) {// found an interaction with the same key
                     interactionsInRange.RemoveAt(i);
@@ -89,9 +87,9 @@ public static class InteractionHandler {
     }
 
     private static void AnimateTextColor() {
-        textColor += 0.01f;
+        textColor += 0.03f;
         textColor %= Mathf.PI * 2f;
-        float greyScaleValue = (192f + (20f * Mathf.Sin(textColor))) / 255f;
+        float greyScaleValue = (230f + (20f * Mathf.Sin(textColor))) / 255f;
         interactionText.color = new Color(greyScaleValue, greyScaleValue, greyScaleValue);
     }
 

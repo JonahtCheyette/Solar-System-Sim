@@ -955,6 +955,8 @@ GameObject:
   - component: {fileID: 560179077}
   - component: {fileID: 560179076}
   - component: {fileID: 560179085}
+  - component: {fileID: 560179090}
+  - component: {fileID: 560179089}
   - component: {fileID: 560179079}
   - component: {fileID: 560179084}
   - component: {fileID: 560179083}
@@ -1111,6 +1113,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e37ffc536a417f4281fcb401fb3d729, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minInteractionDist: 10
 --- !u!65 &560179086
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1151,6 +1154,31 @@ CapsuleCollider:
   m_Height: 1.7
   m_Direction: 1
   m_Center: {x: 1.53, y: 2.06, z: 4.36}
+--- !u!114 &560179089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560179075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7997702d302beac4485fe08ce0d92f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minInteractionDist: 5
+--- !u!114 &560179090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560179075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75f4c0c8681792244bb4719d94ff9777, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &563870872
 GameObject:
   m_ObjectHideFlags: 0
@@ -2845,7 +2873,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
+  m_Color: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:

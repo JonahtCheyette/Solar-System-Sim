@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ShipDoorController : MonoBehaviour {
+    public float minInteractionDist = 10f;
+
     private bool open;
     private BoxCollider doorCollider;
     private BoxCollider rampCollider;
@@ -17,7 +19,7 @@ public class ShipDoorController : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
-        BoxCollider[] colliders = GetComponents<BoxCollider>();
+        BoxCollider[] colliders = transform.Find("Colliders").gameObject.GetComponents<BoxCollider>();
         float maxZcoord = float.MinValue;
 
         foreach (BoxCollider c in colliders) {
@@ -56,7 +58,9 @@ public class ShipDoorController : MonoBehaviour {
         rampObject.transform.localRotation = Quaternion.Slerp(rampStartRotation, rampFinalRotation, rampStage / 10);
 
         openLastFrame = open;
-        InteractionHandler.AddInteractionIfInRange(ChangeDoorState, open ? "Close Ship Door" : "Open Ship Door", KeyCode.C, transform.position + (transform.rotation * doorCollider.center * transform.localScale.x));
+
+        Vector3 interactionPosition = transform.TransformPoint(doorCollider.center - Vector3.up * doorCollider.size.y / 2f);
+        InteractionHandler.AddInteractionIfInRange(ChangeDoorState, open ? "Close Ship Door" : "Open Ship Door", KeyCode.C, interactionPosition, minInteractionDist);
     }
 
     public bool isOpen {
@@ -67,5 +71,9 @@ public class ShipDoorController : MonoBehaviour {
 
     private void ChangeDoorState() {
         open = !open;
+    }
+
+    public void CloseDoor() {
+        open = false;
     }
 }

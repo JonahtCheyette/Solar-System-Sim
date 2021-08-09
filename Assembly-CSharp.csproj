@@ -68,10 +68,12 @@
     <Compile Include="Assets\Scripts\Gameplay\Animation\CharacterAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Animation\DoorAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Controls\FirstPersonController.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Controls\ShipController.cs" />
     <Compile Include="Assets\Scripts\Gameplay\HUD\PlanetMouseoverHUD.cs" />
     <Compile Include="Assets\Scripts\Gameplay\HUD\PlayerHUDCoordinator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Interactions\InteractionHandler.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Interactions\ShipDoorController.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Interactions\ShipPilotInteraction.cs" />
     <Compile Include="Assets\Scripts\Looks\MovementPrediction.cs" />
     <Compile Include="Assets\Scripts\Looks\PlanetGradientDataPasser.cs" />
     <Compile Include="Assets\Scripts\Looks\PlanetTrail.cs" />
