@@ -65,9 +65,8 @@ public class FirstPersonController : MonoBehaviour {
         return new Vector2(moveAmount.x, moveAmount.z);
     }
 
-    public void ResetCamera() {
+    public void ResetCameraParent() {
         cameraT.parent = cameraParent;
-        cameraT.localPosition = cameraLocalPosition;
     }
 
     private void CheckCursorLockState() {
@@ -147,6 +146,20 @@ public class FirstPersonController : MonoBehaviour {
     public bool Grounded {
         get {
             return grounded;
+        }
+    }
+
+    public Vector3 FPSCameraPosition {
+        get {
+            return cameraLocalPosition;
+        }
+    }
+
+    public Quaternion FPSCameraRotation {
+        get {
+            verticalLookRotation += Input.GetAxis("Mouse Y") * Time.deltaTime * mouseSensitivityY;
+            verticalLookRotation = Mathf.Clamp(verticalLookRotation, -60, 60);
+            return Quaternion.Euler(Vector3.left * verticalLookRotation + new Vector3(0, 180, 0));
         }
     }
 }

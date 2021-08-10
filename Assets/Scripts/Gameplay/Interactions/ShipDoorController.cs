@@ -73,7 +73,7 @@ public class ShipDoorController : MonoBehaviour {
         open = !open;
     }
 
-    public void CloseDoor() {
+    public void Close() {
         open = false;
     }
 }
