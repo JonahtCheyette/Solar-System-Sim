@@ -5,9 +5,6 @@ using UnityEditor;
 
 public class FirstPersonController : MonoBehaviour {
     //makes it so the character can walk around on the planets
-
-    public CelestialBody startingPlanet;
-
     public float mouseSensitivityX = 250f;
     public float mouseSensitivityY = 250f;
     public float walkSpeed = 5f;
@@ -30,7 +27,6 @@ public class FirstPersonController : MonoBehaviour {
 
     private bool grounded;
     private bool cursorIsLocked;
-    private Vector3 groundVelocity;
 
     private Vector3 targetMoveAmount;
 
@@ -51,7 +47,6 @@ public class FirstPersonController : MonoBehaviour {
     // Update is called once per frame
     private void Update() {
         GetMovementInput();
-        DoFriction();
         Jump();
         CheckIfGrounded();
         CheckCursorLockState();
@@ -86,16 +81,6 @@ public class FirstPersonController : MonoBehaviour {
 
         if (Physics.Raycast(ray, out hit, 0.1f, groundedMask)) {
             grounded = true;
-            groundVelocity = transform.InverseTransformDirection(hit.rigidbody.GetPointVelocity(hit.point) - rigidBody.velocity);
-        } else {
-            groundVelocity = Vector3.zero;
-        }
-    }
-
-    private void DoFriction() {
-        if (grounded) {
-            //friction with ground
-            moveAmount = Vector3.SmoothDamp(moveAmount, groundVelocity, ref smoothMoveVelocity, 1/groundVelocity.sqrMagnitude);
         }
     }
 
@@ -129,6 +114,7 @@ public class FirstPersonController : MonoBehaviour {
     }
 
     private void FindStartingPosition() {
+        CelestialBody startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
         Vector3 dirFromPlanetToPlayer = (transform.position - startingPlanet.Position).normalized;
         rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (0.1f + startingPlanet.radius);
         rigidBody.velocity = startingPlanet.initialVelocity;
@@ -136,11 +122,6 @@ public class FirstPersonController : MonoBehaviour {
         Vector3 targetDirection = (startingPlanet.transform.position - transform.position).normalized;
         //rotate so that the player's down points torwards the planet
         transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
-
-        ShipPhysics spaceShip = FindObjectOfType<ShipPhysics>();
-        spaceShip.transform.position = rigidBody.position + transform.right * 10;
-        spaceShip.transform.rotation *= Quaternion.FromToRotation(-spaceShip.transform.up, targetDirection);
-        spaceShip.RigidBody.velocity = startingPlanet.initialVelocity;
     }
 
     public bool Grounded {

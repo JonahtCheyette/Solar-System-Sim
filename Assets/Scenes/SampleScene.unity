@@ -1194,7 +1194,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 560179077}
-  - component: {fileID: 560179076}
   - component: {fileID: 560179085}
   - component: {fileID: 560179090}
   - component: {fileID: 560179089}
@@ -1206,21 +1205,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &560179076
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 560179075}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1199d732c3e70f49ad6fae012dcf35f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  groundedMask:
-    serializedVersion: 2
-    m_Bits: 256
 --- !u!4 &560179077
 Transform:
   m_ObjectHideFlags: 0
@@ -1229,7 +1213,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 560179075}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3000, z: 0}
+  m_LocalPosition: {x: -7172.8, y: 44.3, z: 0}
   m_LocalScale: {x: 1.6, y: 1.6, z: 1.6}
   m_Children:
   - {fileID: 411055955}
@@ -1250,7 +1234,7 @@ Rigidbody:
   serializedVersion: 2
   m_Mass: 35
   m_Drag: 0
-  m_AngularDrag: 7.85
+  m_AngularDrag: 7.28
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -1294,6 +1278,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75f4c0c8681792244bb4719d94ff9777, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  groundedMask:
+    serializedVersion: 2
+    m_Bits: 256
+  piloted: 0
+  thrustStrength: 20
+  rotSpeed: 5
+  rollSpeed: 30
+  rotSmoothSpeed: 10
+  lockCursor: 0
 --- !u!1 &563870872
 GameObject:
   m_ObjectHideFlags: 0
@@ -2699,7 +2692,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1761671402}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 3002.9712, z: -3.936}
+  m_LocalPosition: {x: -7165.9, y: 32.2, z: -3.936}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 253178429}
@@ -2772,7 +2765,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58a25b2258f836e4bbaf73c31e834d7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingPlanet: {fileID: 1920399979}
   mouseSensitivityX: 250
   mouseSensitivityY: 250
   walkSpeed: 5

@@ -81,7 +81,6 @@
     <Compile Include="Assets\Scripts\Physics\CelestialBody.cs" />
     <Compile Include="Assets\Scripts\Physics\GravityHandler.cs" />
     <Compile Include="Assets\Scripts\Physics\PlayerGravity.cs" />
-    <Compile Include="Assets\Scripts\Physics\ShipPhysics.cs" />
     <Compile Include="Assets\Scripts\Physics\Universe.cs" />
     <None Include="Assets\Scripts\Shaders\PlanetGradientShader.shader" />
     <None Include="Assets\Scripts\3rd Party\Shader\Bloom.shader" />

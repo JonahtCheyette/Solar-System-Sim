@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ShipPilotInteraction : MonoBehaviour {
 
+    private KeyCode interactionKey = KeyCode.E;
+
     //interaction functionality
     public float minInteractionDist = 5f;
     private GameObject player;
@@ -26,7 +28,6 @@ public class ShipPilotInteraction : MonoBehaviour {
     void Start() {
         player = GameObject.Find("Player");
         shipController = GetComponent<ShipController>();
-        shipController.enabled = false;
         shipDoor = GetComponent<ShipDoorController>();
 
         //find where the camera should be placed by finding the furthest forward collider on the ship
@@ -51,9 +52,9 @@ public class ShipPilotInteraction : MonoBehaviour {
         if (!doingAnimation) {
             Vector3 interactionPosition = transform.TransformPoint(chairPosition);
             if (player.activeInHierarchy) {
-                InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", KeyCode.P, interactionPosition, minInteractionDist);
+                InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", interactionKey, interactionPosition, minInteractionDist);
             } else {
-                InteractionHandler.AddInteractionIfInRange(StopPiloting, "Stop Piloting The Spaceship", KeyCode.P, interactionPosition, minInteractionDist + 300f);
+                InteractionHandler.AddInteractionIfInRange(StopPiloting, "Stop Piloting The Spaceship", interactionKey, interactionPosition, minInteractionDist + 300f);
             }
         } else {
             animationStep++;
@@ -84,7 +85,7 @@ public class ShipPilotInteraction : MonoBehaviour {
         //shouldn't leave the planet with an open door!
         shipDoor.Close();
         //turn on the ship
-        shipController.enabled = true;
+        shipController.piloted = true;
         piloting = true;
     }
 
@@ -109,7 +110,7 @@ public class ShipPilotInteraction : MonoBehaviour {
         player.transform.position = transform.TransformPoint(new Vector3(1.2f, 1.37f, chairPosition.z));
 
         //turn off the ship
-        shipController.enabled = false;
+        shipController.piloted = false;
         piloting = false;
     }
 }
