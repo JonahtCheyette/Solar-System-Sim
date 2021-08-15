@@ -16,21 +16,6 @@ public class MovementPrediction : MonoBehaviour {
     private CelestialBodyData[] bodies;
     private Vector3[][] points;
 
-    void Initialize() {
-        CelestialBody[] tempBodies = FindObjectsOfType<CelestialBody>();
-        bodies = new CelestialBodyData[tempBodies.Length];
-        float timeStep = useDefaultTimeStep ? Universe.physicsTimeStep : customTimeStep;
-        for(int i = 0; i < tempBodies.Length; i++) {
-            bodies[i] = new CelestialBodyData(tempBodies[i], timeStep);
-            if (isRelative && relativeTo != null) {
-                if(tempBodies[i] == relativeTo) {
-                    relativeIndex = i;
-                }
-            }
-        }
-        points = new Vector3[bodies.Length][];
-    }
-
     private void Update() {
         if (autoUpdate) {
             if (!Application.isPlaying) {
@@ -47,6 +32,21 @@ public class MovementPrediction : MonoBehaviour {
             Simulate();
             DrawPaths();
         }
+    }
+
+    void Initialize() {
+        CelestialBody[] tempBodies = FindObjectsOfType<CelestialBody>();
+        bodies = new CelestialBodyData[tempBodies.Length];
+        float timeStep = useDefaultTimeStep ? Universe.physicsTimeStep : customTimeStep;
+        for (int i = 0; i < tempBodies.Length; i++) {
+            bodies[i] = new CelestialBodyData(tempBodies[i], timeStep);
+            if (isRelative && relativeTo != null) {
+                if (tempBodies[i] == relativeTo) {
+                    relativeIndex = i;
+                }
+            }
+        }
+        points = new Vector3[bodies.Length][];
     }
 
     private void Simulate() {

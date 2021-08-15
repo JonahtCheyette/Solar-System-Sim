@@ -1282,7 +1282,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   piloted: 0
-  thrustStrength: 20
+  thrustStrength: 5
   rotSpeed: 5
   rollSpeed: 30
   rotSmoothSpeed: 10

@@ -26,13 +26,11 @@ public class FirstPersonController : MonoBehaviour {
     private Transform cameraParent;
 
     private bool grounded;
-    private bool cursorIsLocked;
 
     private Vector3 targetMoveAmount;
 
     private void Awake() {
-        Cursor.lockState = CursorLockMode.Locked;
-        cursorIsLocked = true;
+        CursorLock.Reset();
     }
 
     // Start is called before the first frame update
@@ -49,7 +47,7 @@ public class FirstPersonController : MonoBehaviour {
         GetMovementInput();
         Jump();
         CheckIfGrounded();
-        CheckCursorLockState();
+        CursorLock.HandleCursor();
     }
 
     private void FixedUpdate() {
@@ -64,16 +62,6 @@ public class FirstPersonController : MonoBehaviour {
         cameraT.parent = cameraParent;
     }
 
-    private void CheckCursorLockState() {
-        //changing whether the cursor is locked to the center of the screen
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            cursorIsLocked = false;
-        }
-        if (Input.GetMouseButtonDown(0) && Input.mousePosition.x >= 0 && Input.mousePosition.y >= 0 && Input.mousePosition.x <= Handles.GetMainGameViewSize().x && Input.mousePosition.y <= Handles.GetMainGameViewSize().y) {
-            cursorIsLocked = true;
-        }
-    }
-
     private void CheckIfGrounded() {
         grounded = false;
         Ray ray = new Ray(transform.position, -transform.up);
@@ -86,23 +74,21 @@ public class FirstPersonController : MonoBehaviour {
 
     private void GetMovementInput() {
         targetMoveAmount = Vector3.zero;
-        if (cursorIsLocked) {
-            //rotating on the horizontal axis
-            transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Time.deltaTime * mouseSensitivityX);
-            //rotating on the vertical axis
-            verticalLookRotation += Input.GetAxis("Mouse Y") * Time.deltaTime * mouseSensitivityY;
-            verticalLookRotation = Mathf.Clamp(verticalLookRotation, -60, 60);
-            cameraT.localEulerAngles = Vector3.left * verticalLookRotation + new Vector3(0, 180, 0);
+        //rotating on the horizontal axis
+        transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Time.deltaTime * mouseSensitivityX);
+        //rotating on the vertical axis
+        verticalLookRotation += Input.GetAxis("Mouse Y") * Time.deltaTime * mouseSensitivityY;
+        verticalLookRotation = Mathf.Clamp(verticalLookRotation, -60, 60);
+        cameraT.localEulerAngles = Vector3.left * verticalLookRotation + new Vector3(0, 180, 0);
 
-            //capturing movement input
-            Vector3 moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
-            //running/walking
-            targetMoveAmount = moveDir;
-            if (Input.GetKey(KeyCode.LeftShift)) {
-                targetMoveAmount *= runSpeed;
-            } else {
-                targetMoveAmount *= walkSpeed;
-            }
+        //capturing movement input
+        Vector3 moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
+        //running/walking
+        targetMoveAmount = moveDir;
+        if (Input.GetKey(KeyCode.LeftShift)) {
+            targetMoveAmount *= runSpeed;
+        } else {
+            targetMoveAmount *= walkSpeed;
         }
         moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, 0.15f);
     }

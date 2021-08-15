@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\3rd Party\Bloom.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Animation\CharacterAnimator.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Animation\DoorAnimator.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Controls\CursorLock.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Controls\FirstPersonController.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Controls\ShipController.cs" />
     <Compile Include="Assets\Scripts\Gameplay\HUD\PlanetMouseoverHUD.cs" />

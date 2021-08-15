@@ -15,7 +15,7 @@ public class ShipController : MonoBehaviour {
     public float rotSpeed = 5;
     public float rollSpeed = 30;
     public float rotSmoothSpeed = 10;
-    public bool lockCursor;
+    public bool lockCursor = true;
 
     private Quaternion targetRot;
     private Quaternion smoothedRot;
@@ -66,12 +66,13 @@ public class ShipController : MonoBehaviour {
     }
 
     private void HandleMovement() {
-        //DebugHelper.HandleEditorInput(lockCursor);
+        CursorLock.HandleCursor(lockCursor);
         // Thruster input
         int thrustInputX = GetInputAxis(leftKey, rightKey);
         int thrustInputY = GetInputAxis(descendKey, ascendKey);
         int thrustInputZ = GetInputAxis(backwardKey, forwardKey);
-        thrusterInput = new Vector3(thrustInputX, thrustInputY, thrustInputZ);
+        //have to reverse z input since the spaceship model is rotated 180 degrees
+        thrusterInput = new Vector3(thrustInputX, thrustInputY, -thrustInputZ);
 
         // Rotation input
         float yawInput = Input.GetAxisRaw("Mouse X") * rotSpeed;
@@ -81,7 +82,7 @@ public class ShipController : MonoBehaviour {
         // Calculate rotation
         if (numCollisionTouches == 0) {
             var yaw = Quaternion.AngleAxis(yawInput, transform.up);
-            var pitch = Quaternion.AngleAxis(-pitchInput, transform.right);
+            var pitch = Quaternion.AngleAxis(pitchInput, transform.right);
             var roll = Quaternion.AngleAxis(-rollInput, transform.forward);
 
             targetRot = yaw * pitch * roll * targetRot;

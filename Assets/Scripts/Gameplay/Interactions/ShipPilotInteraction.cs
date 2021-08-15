@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ShipPilotInteraction : MonoBehaviour {
 
-    private KeyCode interactionKey = KeyCode.E;
+    private KeyCode interactionKey = KeyCode.X;
 
     //interaction functionality
     public float minInteractionDist = 5f;
