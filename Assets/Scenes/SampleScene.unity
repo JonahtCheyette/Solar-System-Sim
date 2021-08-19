@@ -1450,7 +1450,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numSteps: 20000
-  autoUpdate: 1
+  autoUpdate: 0
   isRelative: 1
   relativeTo: {fileID: 380344778}
   useDefaultTimeStep: 0

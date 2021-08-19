@@ -117,7 +117,7 @@ public class ShipController : MonoBehaviour {
     }
 
     private void InitializeRigidBody() {
-        rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
+        //rigidBody.interpolation = RigidbodyInterpolation.Interpolate; this is supposed to fix jitteriness, but for me it caused it instead
         rigidBody.useGravity = false;
         rigidBody.isKinematic = false;
         rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
