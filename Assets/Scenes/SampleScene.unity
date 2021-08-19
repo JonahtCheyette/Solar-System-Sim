@@ -554,6 +554,7 @@ GameObject:
   - component: {fileID: 380344780}
   - component: {fileID: 380344779}
   - component: {fileID: 380344778}
+  - component: {fileID: 380344777}
   m_Layer: 8
   m_Name: Star
   m_TagString: Celestial Body
@@ -561,6 +562,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &380344777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380344776}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f90396ef7ecb56c4aa2ea2ccd66055fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coronaSize: 133.66
 --- !u!114 &380344778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1204,7 +1218,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &560179077
 Transform:
   m_ObjectHideFlags: 0
@@ -1436,7 +1450,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numSteps: 135210
-  autoUpdate: 0
+  autoUpdate: 1
   isRelative: 1
   relativeTo: {fileID: 380344778}
   useDefaultTimeStep: 0
@@ -1546,6 +1560,7 @@ GameObject:
   - component: {fileID: 711823153}
   - component: {fileID: 711823155}
   - component: {fileID: 711823156}
+  - component: {fileID: 711823157}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1625,7 +1640,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 711823151}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7b392a4f9968231418b262ce1f1346a1, type: 3}
   m_Name: 
@@ -1649,6 +1664,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 052890a23575ccc46ac3ea486718ccf8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &711823157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 711823151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d7b9f4c8182b3848a91d0dff6d65f1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  haloRadiusMultiplier: 2
 --- !u!1 &745793915 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a8acc2769e0bfcc4da518627f013c443,
@@ -2794,7 +2822,6 @@ GameObject:
   - component: {fileID: 1920399980}
   - component: {fileID: 1920399979}
   - component: {fileID: 1920399981}
-  - component: {fileID: 1920399983}
   - component: {fileID: 1920399982}
   m_Layer: 8
   m_Name: Planet
@@ -2871,7 +2898,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920399974}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7268, y: 0, z: 0}
+  m_LocalPosition: {x: -7220, y: -4, z: -81}
   m_LocalScale: {x: 200, y: 200, z: 200}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2892,7 +2919,7 @@ MonoBehaviour:
   radius: 100
   surfaceGravity: 10.59
   initialVelocity: {x: 0, y: 14.58, z: 0}
-  color: {r: 1, g: 0, b: 0, a: 0}
+  color: {r: 1, g: 0, b: 0, a: 1}
 --- !u!54 &1920399980
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2901,7 +2928,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920399974}
   serializedVersion: 2
-  m_Mass: 1e+9
+  m_Mass: 105900000
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 0
@@ -2921,6 +2948,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d7b9f4c8182b3848a91d0dff6d65f1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  haloRadiusMultiplier: 2
 --- !u!120 &1920399982
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -3016,20 +3044,6 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
---- !u!114 &1920399983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1920399974}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64d3d35ea744491489276092259c6a55, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  length: 500
-  strength: 0.25
 --- !u!1 &1990929273
 GameObject:
   m_ObjectHideFlags: 0

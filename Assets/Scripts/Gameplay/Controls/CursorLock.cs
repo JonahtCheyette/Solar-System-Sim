@@ -19,4 +19,8 @@ public static class CursorLock {
             Debug.Break();
         }
     }
+
+    public static bool CursorIsLocked() {
+        return Cursor.lockState == CursorLockMode.Locked;
+    }
 }

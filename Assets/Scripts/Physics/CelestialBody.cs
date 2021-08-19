@@ -31,8 +31,12 @@ public class CelestialBody : MonoBehaviour {
         rb.MovePosition(rb.position + velocity * timeStep);
     }
 
-    public void OnValidate() {
+    private void OnValidate() {
         mass = (surfaceGravity * radius * radius) / Universe.gravitationalConstant;
+        if (rb == null) {
+            rb = GetComponent<Rigidbody>();
+        }
+        rb.mass = mass;
         transform.localScale = Vector3.one * radius * 2;
     }
 
