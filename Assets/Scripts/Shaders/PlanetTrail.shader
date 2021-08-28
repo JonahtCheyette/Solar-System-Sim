@@ -87,19 +87,12 @@
             uint numSegments;
             uint numPlanets;
 
-            // because (at least on my screen) the width and the height of the viewport are different, and because the bottom left corner is (0, 0)
-            // and top right corner is (1, 1) no matter what the relative width and height of the screen is,
-            // I need to scale the x relative to the y and this is the variable that does that
-            // equal to screenwidth/screenheight
-            float aspectRatio;
-
             //the size of the halo relative to the planet's radius
             float planetHaloSize;
 
             float getSqrDistToSegment(float2 start, float2 end, float2 p) {
                 float2 offset = end - start;
                 float sqrSegLength = dot(offset, offset);
-                //float2 pOffset = p - start;
                 float t = max(0, min(1, dot(p - start, offset) / sqrSegLength));
                 //so, if you drew a straight line from p to the line defined by start and end, t is how far along the line it would be,
                 //where 0 is directly at start and 1 is directly at end. the way this works is you get the vector from start to p.
@@ -108,7 +101,7 @@
                 //the min and max functions simply clamp the result to [0, 1]
                 float2 projection = start + t * offset; //where p is projected to be on the line defined by start and end, the closest point on that line
                 float2 offsetToSegment = p - projection;
-                offsetToSegment.x *= aspectRatio;
+                offsetToSegment.x *= _ScreenParams.x / _ScreenParams.y;
                 return dot(offsetToSegment, offsetToSegment); //the distance squared!
             }
 
@@ -153,7 +146,7 @@
                 //the nice planet shading
                 for (uint j = 0; j < numPlanets; j++) {
                     float2 offset = v.uv - planets[j].viewportPos;
-                    offset.x *= aspectRatio; // the scaling I was talking about
+                    offset.x *= _ScreenParams.x / _ScreenParams.y; // the scaling I was talking about
                     float dstToPlanet = length(offset);
                     if (dstToPlanet <= planets[j].radius) {
                         float relativeHeightChange = v.uv.y - planets[j].viewportPos.y; // this makes the top of the planet brighter than the bottom

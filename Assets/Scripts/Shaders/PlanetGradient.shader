@@ -50,12 +50,6 @@
 
             uint numPlanets;
 
-            // because (at least on my screen) the width and the height of the viewport are different, and because the bottom left corner is (0, 0)
-            // and top right corner is (1, 1) no matter what the relative width and height of the screen is,
-            // I need to scale the x relative to the y and this is the variable that does that
-            // equal to screenwidth/screenheight
-            float aspectRatio;
-
             //the size of the halo relative to the planet's radius
             static const float planetHaloSize = 2;
 
@@ -67,7 +61,10 @@
                 //the nice planet shading
                 for (uint i = 0; i < numPlanets; i++) {
                     float2 offset = v.uv - planets[i].viewportPos;
-                    offset.x *= aspectRatio; // the scaling I was talking about
+                    // because (at least on my screen) the width and the height of the viewport are different, and because the bottom left corner is (0, 0)
+                    // and top right corner is (1, 1) no matter what the relative width and height of the screen is,
+                    // I need to scale the x relative to the y
+                    offset.x *= _ScreenParams.x/_ScreenParams.y;
                     float dstToPlanet = length(offset);
                     if (dstToPlanet <= planets[i].radius) {
                         float relativeHeightChange = v.uv.y - planets[i].viewportPos.y; // this makes the top of the planet brighter than the bottom

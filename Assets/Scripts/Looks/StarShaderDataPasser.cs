@@ -6,10 +6,10 @@ using UnityEngine;
 //keeping it here in case I ever decide to do a custom star shader
 [ExecuteAlways]
 public class StarShaderDataPasser : MonoBehaviour {
-    [Min(0)]
+    [Min(0.0001f)]
     public float coronaSize;
 
-    Material starMaterial;
+    private Material starMaterial;
     // Start is called before the first frame update
     void Start() {
         if (Application.isPlaying) {
@@ -23,6 +23,6 @@ public class StarShaderDataPasser : MonoBehaviour {
     void Update() {
         starMaterial.SetVector("center", new Vector4(transform.position.x, transform.position.y, transform.position.z));
         starMaterial.SetFloat("coronaRadius", transform.localScale.x / 2);
-        starMaterial.SetFloat("starRadius", Mathf.Max((transform.localScale.x / 2) - coronaSize, 0));
+        starMaterial.SetFloat("starRadius", Mathf.Max(transform.localScale.x / 2 - coronaSize, 0));
     }
 }

@@ -2,89 +2,112 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlanetMouseoverHUD : MonoBehaviour {
+public static class PlanetMouseoverHUD {
     //planned HUD:
-    //circle around planet that has mouseover
+    //ring around planet that has mouseover
     //arrow in direction of movement, porportional to speed of movement (will need a maximum length)
-    //cirlce and arrow are yellow if not locked on, blue if locked on (need to think about color choice)
-    //white text at top saying name of planet, distance, relative velocity (on plane perpendicular to direction planet is being viewed on), relative velocity (in the direction the planet is being viewed from, red if planet is going further away, blue otherwise)
+    //ring is slightly see-through
+    //ring shrinks and is brighter if locked on
+    //lock on color?
+    //text at top saying name of planet, distance, relative velocity (on plane perpendicular to direction planet is being viewed on), relative velocity (in the direction the planet is being viewed from, red if planet is going further away, blue otherwise)
     //need a more elegant system for relative velocity than the 2 numbers
-    public Color lockedOnColor = Color.blue;
-    public Color regularColor = Color.yellow;
+    private static Color lockedOnColor = Color.blue;
+    private static Color regularColor = Color.yellow;
     
-    public Material Mat;
-    [Min(0)]
-    public float displayDistFromSurfaceOfPlanet;
-    public int HUDRes = 50;
+    private static Material Mat;
+    private static float displayDistFromSurfaceOfPlanetInPixels = 25;
+    private static float thicknessInPixels = 8;
+    private static int HUDRes = 50;
     //the range of distances where the HUD will fade out as you approach the planet
-    public Vector2 fadeOutRange;
+    public static Vector2 fadeOutRange = new Vector2(400, 800);
 
-    Camera playerCam;
-    Mesh lockOnMesh;
+    private static Camera playerCam;
+    private static Mesh lockOnMesh;
 
-    MaterialPropertyBlock materialProperties;
-
+    private static MaterialPropertyBlock materialProperties;
 
     //make a mesh at the Planet's location, then display it on the screen
-    public void DrawPlanetHUD(CelestialBody body) {
+    public static void DrawPlanetHUD(CelestialBody body, bool lockedOn) {
+        Initialize();
+
+        Vector3 dirToPlayer = (playerCam.transform.position - body.Position).normalized;
+
+        CreateLockOnMesh(body, body.Position);
+        DrawMesh(body, dirToPlayer, body.Position, lockedOn);
+    }
+
+    private static void Initialize() {
         if (materialProperties == null) {
             materialProperties = new MaterialPropertyBlock();
         }
         if (playerCam == null) {
             playerCam = Camera.main;
         }
-        if(lockOnMesh == null) {
+        if (lockOnMesh == null) {
             lockOnMesh = new Mesh();
         }
+        if (Mat == null) {
+            Mat = new Material(Shader.Find("Unlit/PlanetHUD"));
+        }
+    }
 
-        Vector3 bodyPosition = body.transform.position;
-        //since we're drawing the mesh just behind the actual planet, we need to scale the thickness so it appears the same at any distance
-        Vector3 dirToPlayer = (playerCam.transform.position - bodyPosition).normalized;
-        Vector3 meshPosition = bodyPosition - dirToPlayer * body.radius * 1.2f;
+    private static void CreateLockOnMesh(CelestialBody body, Vector3 meshPosition) {
+        //since we're drawing the circle just behind the actual planet, we need to scale the size so it appears the same at any distance
+        //divide a measurement (in pixels) by this to get how large it should be in units to display that large
         float pixelsPerUnit = (playerCam.WorldToScreenPoint(meshPosition) - playerCam.WorldToScreenPoint(meshPosition + playerCam.transform.up)).magnitude;
-        float thicknessScaledByDistance = displayDistFromSurfaceOfPlanet / pixelsPerUnit;
+        float dstScaledByDistance = displayDistFromSurfaceOfPlanetInPixels / pixelsPerUnit;
+        float thicknessScaledByDistance = thicknessInPixels / pixelsPerUnit;
 
-        float circleRadius = body.radius * 1.2f + thicknessScaledByDistance;
+        float innerRadius = body.radius + dstScaledByDistance;
+        float outerRadius = innerRadius + thicknessScaledByDistance;
 
-        int numPoints = Mathf.Max(15, HUDRes);
-        float angleIncrement = 2*Mathf.PI/numPoints;
+        int numSegments = Mathf.Max(8, HUDRes);
+        float angleIncrement = 2 * Mathf.PI / numSegments;
 
-        Vector3[] verts = new Vector3[numPoints];
-        int[] tris = new int[3 * (numPoints - 2)];
-        
+        Vector3[] verts = new Vector3[numSegments * 2];
+        int[] tris = new int[6 * numSegments]; // 3 * (2 * numSegments). 2 * numsegments is the actual # of triangles
+
         //constructing the mesh
-        for (int i = 0; i < numPoints; i++) {
+        for (int i = 0; i < numSegments; i++) {
             //vertices
             float pointAngle = i * angleIncrement;
             Vector3 dir = new Vector3(Mathf.Cos(pointAngle), Mathf.Sin(pointAngle));
 
-            verts[i] = dir * circleRadius;
+            verts[i * 2] = dir * innerRadius;
+            verts[i * 2 + 1] = dir * outerRadius;
         }
 
-        //now for triangles
-        //array to hold the vertex indicies in the order, 0, numPoints-1, 1, numPoints-2, 2, numPoints-3 order the triangles will be constructed from
-        int[] orderedVertexIndicies = new int[numPoints];
-        //because we're working with ints, the decimal gets dropped from the result of the division
-        for (int i = 1; i < numPoints/2 + 1; i++) {
-            orderedVertexIndicies[i * 2 - 1] = numPoints - i;
-            if(i * 2 <= numPoints) {
-                orderedVertexIndicies[i * 2] = i;
+        //creating the triangles
+        for (int i = 0; i < verts.Length - 2; i++) {
+            if (i % 2 == 1) {// I had to do it this way because unity calculates normals clockwise, and for some reason setting them by hand wasn't working
+                tris[i * 3] = i;
+                tris[i * 3 + 1] = i + 2;
+                tris[i * 3 + 2] = i + 1;
+            } else {
+                tris[i * 3] = i;
+                tris[i * 3 + 1] = i + 1;
+                tris[i * 3 + 2] = i + 2;
             }
         }
-        //creating the triangles
-        for (int i = 0; i < numPoints - 2; i++) {
-            tris[i * 3] = orderedVertexIndicies[i];
-            tris[i * 3 + 1] = orderedVertexIndicies[i + 1];
-            tris[i * 3 + 2] = orderedVertexIndicies[i + 2];
-        }
+        tris[(verts.Length - 2) * 3] = verts.Length - 2;
+        tris[(verts.Length - 2) * 3 + 1] = verts.Length - 1;
+        tris[(verts.Length - 2) * 3 + 2] = 0;
+
+        tris[(verts.Length - 1) * 3] = verts.Length - 1;
+        tris[(verts.Length - 1) * 3 + 1] = 1;
+        tris[(verts.Length - 1) * 3 + 2] = 0;
 
         lockOnMesh.vertices = verts;
         lockOnMesh.triangles = tris;
+        lockOnMesh.RecalculateNormals();
+    }
 
+    private static void DrawMesh(CelestialBody body, Vector3 dirToPlayer, Vector3 meshPosition, bool lockedOn) {
         Quaternion rot = Quaternion.LookRotation(dirToPlayer, playerCam.transform.up);
 
-        float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - bodyPosition).magnitude - body.radius));
-        Color HUDColor = lockedOnColor;
+        float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - body.transform.position).magnitude - body.radius));
+        //Debug.Log(alpha);
+        Color HUDColor = lockedOn ? lockedOnColor : regularColor;
 
         HUDColor.a = alpha;
         materialProperties.SetColor("_Color", HUDColor);

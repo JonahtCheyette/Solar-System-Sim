@@ -21,19 +21,25 @@ public class ShipController : MonoBehaviour {
     private Quaternion smoothedRot;
     private Vector3 thrusterInput;
 
-    private int numCollisionTouches;
-
     private KeyCode ascendKey = KeyCode.Space;
     private KeyCode descendKey = KeyCode.LeftShift;
-    private KeyCode rollCounterKey = KeyCode.Q;
-    private KeyCode rollClockwiseKey = KeyCode.E;
     private KeyCode forwardKey = KeyCode.W;
     private KeyCode backwardKey = KeyCode.S;
     private KeyCode leftKey = KeyCode.A;
     private KeyCode rightKey = KeyCode.D;
+    private KeyCode rollCounterKey = KeyCode.Q;
+    private KeyCode rollClockwiseKey = KeyCode.E;
+
+    private KeyCode leaveKey = KeyCode.X;
+
+    private ShipPilotInteraction pilotInteraction;
+
+    private List<string> collidingWith;
 
     // Start is called before the first frame update
     private void Awake() {
+        pilotInteraction = GetComponent<ShipPilotInteraction>();
+
         rigidBody = GetComponent<Rigidbody>();
 
         InitializeRigidBody();
@@ -44,12 +50,14 @@ public class ShipController : MonoBehaviour {
         FindStartingPosition();
         targetRot = transform.rotation;
         smoothedRot = transform.rotation;
+        collidingWith = new List<string>();
     }
 
     // Update is called once per frame
     void Update() {
         if (piloted) {
             HandleMovement();
+            CheckIfExiting();
         }
     }
 
@@ -60,7 +68,7 @@ public class ShipController : MonoBehaviour {
         Vector3 thrustDir = transform.TransformVector(thrusterInput);
         rigidBody.AddForce(thrustDir * thrustStrength, ForceMode.Acceleration);
 
-        if (numCollisionTouches == 0) {
+        if (collidingWith.Count == 0) {
             rigidBody.MoveRotation(smoothedRot);
         }
     }
@@ -71,19 +79,17 @@ public class ShipController : MonoBehaviour {
         int thrustInputX = GetInputAxis(leftKey, rightKey);
         int thrustInputY = GetInputAxis(descendKey, ascendKey);
         int thrustInputZ = GetInputAxis(backwardKey, forwardKey);
-        //have to reverse z input since the spaceship model is rotated 180 degrees
-        thrusterInput = new Vector3(thrustInputX, thrustInputY, -thrustInputZ);
+        thrusterInput = new Vector3(thrustInputX, thrustInputY, thrustInputZ);
 
         // Rotation input
-        float yawInput = Input.GetAxisRaw("Mouse X") * rotSpeed;
-        float pitchInput = Input.GetAxisRaw("Mouse Y") * rotSpeed;
-        float rollInput = GetInputAxis(rollCounterKey, rollClockwiseKey) * rollSpeed * Time.deltaTime;
+        Vector2 YawPitchInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")).normalized * rotSpeed;
+        float rollInput = GetInputAxis(rollClockwiseKey, rollCounterKey) * rollSpeed * Time.deltaTime;
 
         // Calculate rotation
-        if (numCollisionTouches == 0) {
-            var yaw = Quaternion.AngleAxis(yawInput, transform.up);
-            var pitch = Quaternion.AngleAxis(pitchInput, transform.right);
-            var roll = Quaternion.AngleAxis(-rollInput, transform.forward);
+        if (collidingWith.Count == 0) {
+            var yaw = Quaternion.AngleAxis(YawPitchInput.x, transform.up);
+            var pitch = Quaternion.AngleAxis(-YawPitchInput.y, transform.right);
+            var roll = Quaternion.AngleAxis(rollInput, transform.forward);
 
             targetRot = yaw * pitch * roll * targetRot;
             smoothedRot = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotSmoothSpeed);
@@ -104,16 +110,28 @@ public class ShipController : MonoBehaviour {
         return axis;
     }
 
+    private void CheckIfExiting() {
+        if (Input.GetKeyDown(leaveKey)) {
+            pilotInteraction.StopPiloting();
+        }
+    }
+
     private void OnCollisionEnter(Collision other) {
         if (groundedMask == (groundedMask | (1 << other.gameObject.layer))) {
-            numCollisionTouches++;
+            if (!collidingWith.Contains(other.gameObject.name)) {
+                collidingWith.Add(other.gameObject.name);
+            }
         }
     }
 
     private void OnCollisionExit(Collision other) {
         if (groundedMask == (groundedMask | (1 << other.gameObject.layer))) {
-            numCollisionTouches--;
+            collidingWith.Remove(other.gameObject.name);
         }
+    }
+
+    private void findPlanetLookingAt() {
+
     }
 
     private void InitializeRigidBody() {

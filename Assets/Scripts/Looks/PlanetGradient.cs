@@ -52,7 +52,7 @@ public class PlanetGradient : MonoBehaviour {
     }
 
     private void GetAspectRatioAndCamera(RenderTexture source) {
-        aspectRatio = ((float)source.width) / ((float)source.height); // I know Visual Studio says the cast to float is unnecessary. It's necessary
+        aspectRatio = (source.width) / ((float)source.height);
         cam = Camera.current;
     }
 
@@ -134,7 +134,6 @@ public class PlanetGradient : MonoBehaviour {
     private void SetDynamicMaterialValues() {
         mat.SetBuffer("planets", planetBuffer);
         mat.SetInt("numPlanets", planetList.Count);
-        mat.SetFloat("aspectRatio", aspectRatio);
         mat.SetFloat("planetHaloSize", haloRadiusMultiplier);
     }
 

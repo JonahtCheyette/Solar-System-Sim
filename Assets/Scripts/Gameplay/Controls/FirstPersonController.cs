@@ -131,4 +131,10 @@ public class FirstPersonController : MonoBehaviour {
             return Quaternion.Euler(Vector3.left * verticalLookRotation + new Vector3(0, 180, 0));
         }
     }
+
+    public Rigidbody rb {
+        get {
+            return rigidBody;
+        }
+    }
 }

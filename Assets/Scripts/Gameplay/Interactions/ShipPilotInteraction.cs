@@ -12,7 +12,7 @@ public class ShipPilotInteraction : MonoBehaviour {
     private Vector3 shipCameraPosition;
     private ShipController shipController;
     private ShipDoorController shipDoor;
-    private Vector3 chairPosition = new Vector3(0, 2.21f, -2.46f);
+    private Vector3 chairPosition = new Vector3(0, 2.21f, 2.46f);
     private FirstPersonController playerController;
     private bool piloting;
 
@@ -32,10 +32,10 @@ public class ShipPilotInteraction : MonoBehaviour {
 
         //find where the camera should be placed by finding the furthest forward collider on the ship
         BoxCollider[] colliders = transform.Find("Colliders").gameObject.GetComponents<BoxCollider>();
-        shipCameraPosition = Vector3.forward * float.MaxValue;
+        shipCameraPosition = Vector3.forward * float.MinValue;
 
         foreach (BoxCollider c in colliders) {
-            if (c.center.z < shipCameraPosition.z) {
+            if (c.center.z > shipCameraPosition.z) {
                 //this collider is further forward
                 shipCameraPosition = c.center;
             }
@@ -53,16 +53,14 @@ public class ShipPilotInteraction : MonoBehaviour {
             Vector3 interactionPosition = transform.TransformPoint(chairPosition);
             if (player.activeInHierarchy) {
                 InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", interactionKey, interactionPosition, minInteractionDist);
-            } else {
-                InteractionHandler.AddInteractionIfInRange(StopPiloting, "Stop Piloting The Spaceship", interactionKey, interactionPosition, minInteractionDist + 300f);
             }
         } else {
             animationStep++;
 
             Camera.main.transform.localPosition += cameraPositionChange;
-            Camera.main.transform.localRotation = Quaternion.Slerp(startCameraRotation, finalCameraRotation, ((float) animationStep) / animationLength);
-
-            if(animationStep == animationLength) {
+            Camera.main.transform.localRotation = Quaternion.Slerp(startCameraRotation, finalCameraRotation, ((float)animationStep) / animationLength);
+            
+            if (animationStep == animationLength) {
                 doingAnimation = false;
                 if (!piloting) {
                     playerController.enabled = true;
@@ -74,8 +72,8 @@ public class ShipPilotInteraction : MonoBehaviour {
     private void StartPiloting() {
         //setting up animation stuff
         Camera.main.transform.parent = gameObject.transform;
-        cameraPositionChange = (shipCameraPosition - Camera.main.transform.localPosition)/10;
-        finalCameraRotation = Quaternion.AngleAxis(180f, Vector3.up);
+        cameraPositionChange = (shipCameraPosition - Camera.main.transform.localPosition) / animationLength;
+        finalCameraRotation = Quaternion.AngleAxis(0f, Vector3.up);
         startCameraRotation = Camera.main.transform.localRotation;
         doingAnimation = true;
         animationStep = 0;
@@ -89,28 +87,31 @@ public class ShipPilotInteraction : MonoBehaviour {
         piloting = true;
     }
 
-    private void StopPiloting() {
-        player.SetActive(true);
+    public void StopPiloting() {
+        if (piloting) {
+            player.SetActive(true);
 
-        //animation stuff
-        playerController.ResetCameraParent();
-        cameraPositionChange = (playerController.FPSCameraPosition - Camera.main.transform.localPosition) / animationLength;
-        finalCameraRotation = playerController.FPSCameraRotation;
-        startCameraRotation = Camera.main.transform.localRotation;
-        doingAnimation = true;
-        animationStep = 0;
+            //setting up the player's position
+            //where the player should be started based on the floor collider
+            player.transform.position = transform.TransformPoint(new Vector3(-1.2f, 1.37f, chairPosition.z));
+            //setting player velocity
+            playerController.rb.velocity = shipController.RigidBody.velocity;
 
-        //have to do this so the FPS camera rotation control doesn't take priority over the animation
-        //gets turned on at the end of the animation
-        playerController.enabled = false;
+            //animation stuff
+            playerController.ResetCameraParent();
+            cameraPositionChange = (playerController.FPSCameraPosition - Camera.main.transform.localPosition) / animationLength;
+            finalCameraRotation = playerController.FPSCameraRotation;
+            startCameraRotation = Camera.main.transform.localRotation;
+            doingAnimation = true;
+            animationStep = 0;
 
-        //setting up the player's position
-        player.transform.rotation = transform.rotation * Quaternion.AngleAxis(180f, Vector3.up);
-        //where the player should be started based on the floor collider
-        player.transform.position = transform.TransformPoint(new Vector3(1.2f, 1.37f, chairPosition.z));
+            //have to do this so the FPS camera rotation control doesn't take priority over the animation
+            //gets turned on at the end of the animation
+            playerController.enabled = false;
 
-        //turn off the ship
-        shipController.piloted = false;
-        piloting = false;
+            //turn off the ship
+            shipController.piloted = false;
+            piloting = false;
+        }
     }
 }

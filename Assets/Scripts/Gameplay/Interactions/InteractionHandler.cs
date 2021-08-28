@@ -31,7 +31,6 @@ public static class InteractionHandler {
         playerTransform = player;
     }
 
-    // Update is called once per frame
     public static void RunInteractions() {
         DrawInteractionPrompts();
         CheckIfInteracting();
@@ -40,13 +39,14 @@ public static class InteractionHandler {
 
     public static void AddInteractionIfInRange(System.Action interact, string interactName, KeyCode interactkey, Vector3 position, float minInteractionRange) {
         // adds the interaction to interactionsInRange if it's within minInteractionRange
+        // and not already in the list
         // if there's another interaction that uses the same key, whichever one is closest 
         // will be the one that remains in interactionsInRange
         // Also limits the number of interactions to 3
         float dist = (playerTransform.position - position).magnitude;
         if (dist < minInteractionRange) {
             for(int i = 0; i < interactionsInRange.Count; i++) {
-                if (interactionsInRange[i].Key == interactkey) {// found an interaction with the same key
+                if (interactionsInRange[i].Key == interactkey && interactionsInRange[i].Dist > dist) {// found an interaction with the same key
                     interactionsInRange.RemoveAt(i);
                     interactionsInRange.Insert(i, new Interaction(interact, interactName, interactkey, dist));
                     return;

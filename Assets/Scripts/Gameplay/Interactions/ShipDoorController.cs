@@ -21,12 +21,12 @@ public class ShipDoorController : MonoBehaviour {
     // Start is called before the first frame update
     void Start() {
         BoxCollider[] colliders = transform.Find("Colliders").gameObject.GetComponents<BoxCollider>();
-        float maxZcoord = float.MinValue;
+        float minZcoord = float.MaxValue;
 
         foreach (BoxCollider c in colliders) {
-            if(c.center.z > maxZcoord) {
+            if(c.center.z < minZcoord) {
                 //this collider is farther back
-                maxZcoord = c.center.z;
+                minZcoord = c.center.z;
                 doorCollider = c;
             }
         }

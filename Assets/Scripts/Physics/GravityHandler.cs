@@ -27,7 +27,7 @@ public class GravityHandler : MonoBehaviour {
     private Vector3 CalculateAccelerationForPlanets(Vector3 position, CelestialBody ignoreBody) {
         //ignore body is there because we don't want any objects to attract themselves
         Vector3 acceleration = Vector3.zero;
-        foreach (var body in bodies) {
+        foreach (CelestialBody body in bodies) {
             if (body != ignoreBody) {
                 float sqrDst = (body.Position - position).sqrMagnitude;
                 Vector3 forceDir = (body.Position - position).normalized;

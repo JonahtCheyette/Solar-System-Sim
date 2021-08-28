@@ -72,7 +72,7 @@ public class PlanetTrail : MonoBehaviour {
     }
 
     private void GetAspectRatioAndCamera(RenderTexture source) {
-        aspectRatio = ((float)source.width) / ((float)source.height); // I know Visual Studio says the cast to float is unnecessary. It's necessary
+        aspectRatio = (source.width) / ((float)source.height);
         cam = Camera.current;
     }
 
@@ -224,7 +224,6 @@ public class PlanetTrail : MonoBehaviour {
         mat.SetBuffer("planets", planetBuffer);
         mat.SetInt("numSegments", segmentsToBeSentToShader.Count);
         mat.SetInt("numPlanets", planetsToBeSentToShader.Count);
-        mat.SetFloat("aspectRatio", aspectRatio);
         mat.SetBuffer("totalSegsOfPlanet", numSegBuffer); // part of my ill-fated task of getting the trails to look how I wanted
         mat.SetFloat("planetHaloSize", haloRadiusMultiplier);
     }

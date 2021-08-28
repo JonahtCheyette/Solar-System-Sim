@@ -9,12 +9,12 @@
         Tags {"Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent"}
         ZWrite Off
         Blend SrcAlpha OneMinusSrcAlpha
-        Cull front
         LOD 100
 
         Pass
         {
             CGPROGRAM
+
             #pragma vertex vert
             #pragma fragment frag
 
@@ -22,6 +22,7 @@
 
             struct appdata {
                 float4 vertex : POSITION;
+                float3 normal : NORMAL;
             };
 
             struct v2f {
@@ -45,15 +46,15 @@
             }
 
             fixed4 frag(v2f i) : SV_Target{
-                float3 forward = mul((float3x3)unity_CameraToWorld, float3(0, 0, 1));
-                float angle = acos(dot(normalize(i.worldPos - center.xyz), forward));
-                float distFromCenterOnCameraPlane = length(i.worldPos - center.xyz) * sin(angle);
-                if (distFromCenterOnCameraPlane >= starRadius) {
-                    float value = pow((coronaRadius - distFromCenterOnCameraPlane) / (coronaRadius - starRadius), 2);
-                    return _Color * value;
+                float3 cameraToCenter = center.xyz - _WorldSpaceCameraPos;
+                if (UNITY_MATRIX_P[3][3] == 1) {
+                    //orthographic
+                    cameraToCenter = mul((float3x3)unity_CameraToWorld, float3(0, 0, 1));
                 }
+                float distanceToCenter = coronaRadius * sin(acos(dot(normalize(i.worldPos - center.xyz), -normalize(cameraToCenter))));
+                float x = max((coronaRadius - distanceToCenter) / (coronaRadius - starRadius), 0);
                 
-                return _Color;
+                return float4(_Color.rgb, pow(x, 3));
             }
             ENDCG
         }

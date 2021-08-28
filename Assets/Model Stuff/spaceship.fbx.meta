@@ -1,28 +1,25 @@
 fileFormatVersion: 2
-guid: a8acc2769e0bfcc4da518627f013c443
+guid: 9382bb4fd02270b4d97d1aa9ed1ca057
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable:
   - first:
       74: -7643428952882733763
-    second: Armature|Close
+    second: Close
   - first:
       74: -2430399904381643104
     second: Open
-  - first:
-      74: 1007095770567677685
-    second: Close
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: SpaceshipMaterial
-    second: {fileID: 2100000, guid: ba0b74979a410df40831794034253957, type: 2}
+    second: {fileID: 2100000, guid: ea862fdcbbd044f4283d0297b2f1b727, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: WIndshieldMaterial
-    second: {fileID: 2100000, guid: 15e284c05f9bd6c479b2f68ad3518aae, type: 2}
+    second: {fileID: 2100000, guid: 1dc73267e99842a4e875fd3a3d23da8c, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
