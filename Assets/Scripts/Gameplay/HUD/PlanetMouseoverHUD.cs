@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public static class PlanetMouseoverHUD {
     //planned HUD:
@@ -26,6 +27,8 @@ public static class PlanetMouseoverHUD {
     //we have to have meshes for both locked on and regular modes, because of the weird way Graphics.DrawMesh works with not drawing the mesh immediately
     private static Mesh lockedOnMesh;
     private static Mesh regularMesh;
+    private static Text lockedOnText;
+    private static Text regularText;
 
     private static MaterialPropertyBlock materialProperties;
 
@@ -37,12 +40,13 @@ public static class PlanetMouseoverHUD {
     //make a mesh at the Planet's location, then display it on the screen
     public static void DrawPlanetHUD(CelestialBody body, Vector3 playerVelocity, bool lockedOn) {
         Initialize();
-        if((playerCam.transform.position - body.transform.position).magnitude - body.radius < fadeOutRange.x) {
+        if ((playerCam.transform.position - body.transform.position).magnitude - body.radius >= fadeOutRange.x) {
             //if we're close enough to the planet that the mesh is even gonna be drawn, otherwise why bother
             Vector3 dirToPlayer = (playerCam.transform.position - body.Position).normalized;
             Vector3 relativeVelocity = body.RigidBody.velocity - playerVelocity;
             CreateMesh(body, relativeVelocity, lockedOn);
             DrawMesh(body, dirToPlayer, relativeVelocity, lockedOn);
+            DisplayRelativeForwardVelocity(relativeVelocity, body, lockedOn);
         }
     }
 
@@ -62,9 +66,45 @@ public static class PlanetMouseoverHUD {
         if (Mat == null) {
             Mat = new Material(Shader.Find("Unlit/PlanetHUD"));
         }
+        if (lockedOnText == null) {
+            lockedOnText = GameObject.Find("Locked On Planet Vel Text").GetComponent<Text>();
+            lockedOnText.text = "";
+            lockedOnText.color = lockedOnColor;
+            lockedOnText.fontSize = 44;
+            lockedOnText.alignment = TextAnchor.MiddleCenter;
+            RectTransform textTransform = lockedOnText.GetComponent<RectTransform>();
+            textTransform.anchorMin = Vector2.zero;
+            textTransform.anchorMax = Vector2.zero;
+            textTransform.pivot = Vector2.zero;
+            textTransform.sizeDelta = new Vector2(240, 50);
+        }
+        if (regularText == null) {
+            regularText = GameObject.Find("Regular Planet Vel Text").GetComponent<Text>();
+            regularText.text = "";
+            Color col = regularColor;
+            col.a = regularAlpha;
+            regularText.color = col;
+            regularText.fontSize = 44;
+            regularText.alignment = TextAnchor.MiddleCenter;
+            RectTransform textTransform = regularText.GetComponent<RectTransform>();
+            textTransform.anchorMin = Vector2.zero;
+            textTransform.anchorMax = Vector2.zero;
+            textTransform.pivot = Vector2.zero;
+            textTransform.sizeDelta = new Vector2(240, 50);
+        }
     }
 
     private static void CreateMesh(CelestialBody body, Vector3 relativeVelocity, bool lockedOn) {
+        int numSegments = Mathf.Max(8, HUDRes);
+        int arrowStartIndex = numSegments * 2;
+
+        Vector3[] verts = CreateVerts(body, relativeVelocity, lockedOn, numSegments, arrowStartIndex);
+        int[] tris = CreateTris(verts.Length, numSegments, arrowStartIndex);
+
+        AssignMeshVertsAndTris(verts, tris, lockedOn);
+    }
+
+    private static Vector3[] CreateVerts(CelestialBody body, Vector3 relativeVelocity, bool lockedOn, int numSegments, int arrowStartIndex) {
         Vector2 relativeOrthagonalVelocity = new Vector2(Vector3.Dot(relativeVelocity, playerCam.transform.right), Vector3.Dot(relativeVelocity, playerCam.transform.up));
         //since we're drawing the ring around the actual planet, we need to scale the size so it appears the same at any distance
         //divide a measurement (in pixels) by this to get how large it should be in units to display that large
@@ -81,13 +121,9 @@ public static class PlanetMouseoverHUD {
         float arrowheadThickness = arrowheadThicknessInPixels / pixelsPerUnit;
         float arrowheadLength = Mathf.Min(arrowheadLengthInPixels, arrowLengthInPixels) / pixelsPerUnit;
         float length = Mathf.Min(arrowLengthInPixels, maxArrowLengthInPixels) / pixelsPerUnit;
-
-        int numSegments = Mathf.Max(8, HUDRes);
         float angleIncrement = 2 * Mathf.PI / numSegments;
 
         Vector3[] verts = new Vector3[numSegments * 2 + 7];
-        // 3 * (2 * numSegments). 2 * numsegments is the actual # of triangles in the ring, the last 4 triangles are for the arrow
-        int[] tris = new int[6 * numSegments + 12];
 
         //constructing the mesh
         for (int i = 0; i < numSegments; i++) {
@@ -100,25 +136,33 @@ public static class PlanetMouseoverHUD {
         }
 
         //arrow time
-        int startIndex = numSegments * 2;
         Vector3 arrowBaseOffset = (verts[3] - verts[1]).normalized * arrowThickness / (2f * Mathf.Cos(angleIncrement / 2f));
         //the base
-        verts[startIndex] = verts[1] + arrowBaseOffset;
-        verts[startIndex + 1] = new Vector3(verts[startIndex].x, -verts[startIndex].y);
+        verts[arrowStartIndex] = verts[1] + arrowBaseOffset;
+        verts[arrowStartIndex + 1] = new Vector3(verts[arrowStartIndex].x, -verts[arrowStartIndex].y);
 
         //the shaft
-        verts[startIndex + 2] = new Vector3(verts[1].x + length - arrowheadLength, verts[startIndex].y);
-        verts[startIndex + 3] = new Vector3(verts[startIndex + 2].x, -verts[startIndex].y);
+        verts[arrowStartIndex + 2] = new Vector3(verts[1].x + length - arrowheadLength, verts[arrowStartIndex].y);
+        verts[arrowStartIndex + 3] = new Vector3(verts[arrowStartIndex + 2].x, -verts[arrowStartIndex].y);
 
         //the base of the arrowhead
-        verts[startIndex + 4] = new Vector3(verts[startIndex + 2].x, (arrowThickness + arrowheadThickness) / 2f);
-        verts[startIndex + 5] = new Vector3(verts[startIndex + 2].x, -verts[startIndex + 4].y);
+        verts[arrowStartIndex + 4] = new Vector3(verts[arrowStartIndex + 2].x, (arrowThickness + arrowheadThickness) / 2f);
+        verts[arrowStartIndex + 5] = new Vector3(verts[arrowStartIndex + 2].x, -verts[arrowStartIndex + 4].y);
 
         // the tip
-        verts[startIndex + 6] = new Vector3(verts[1].x + length, 0);
+        verts[arrowStartIndex + 6] = new Vector3(verts[1].x + length, 0);
+
+        return verts;
+    }
+
+    private static int[] CreateTris(int vertsLength, int numSegments, int arrowStartIndex) {
+        // 3 * (2 * numSegments). 2 * numsegments is the actual # of triangles in the ring, the last 4 triangles are for the arrow
+        int[] tris = new int[6 * numSegments + 12];
 
         //creating the triangles
-        for (int i = 0; i < verts.Length - 9; i++) {
+        //doing the ring triangles
+        //essentially the same as creating a rectangle, just over and over again
+        for (int i = 0; i < vertsLength - 9; i++) {
             if (i % 2 == 1) {// I had to split it this way because unity calculates normals clockwise, and for some reason setting them by hand wasn't working
                 tris[i * 3] = i;
                 tris[i * 3 + 1] = i + 2;
@@ -131,30 +175,54 @@ public static class PlanetMouseoverHUD {
         }
         //whee, hard coding! I hope this doesn't bite me in the ass
         //the code to do the last 2 triangles that complete the ring
-        tris[(verts.Length - 9) * 3] = verts.Length - 9;
-        tris[(verts.Length - 9) * 3 + 1] = verts.Length - 8;
-        tris[(verts.Length - 9) * 3 + 2] = 0;
+        //these two triangles link the last 2 vertices in the ring to the first 2
+        tris[(vertsLength - 9) * 3] = vertsLength - 9;
+        tris[(vertsLength - 9) * 3 + 1] = vertsLength - 8;
+        tris[(vertsLength - 9) * 3 + 2] = 0;
 
-        tris[(verts.Length - 8) * 3] = verts.Length - 8;
-        tris[(verts.Length - 8) * 3 + 1] = 1;
-        tris[(verts.Length - 8) * 3 + 2] = 0;
+        tris[(vertsLength - 8) * 3] = vertsLength - 8;
+        tris[(vertsLength - 8) * 3 + 1] = 1;
+        tris[(vertsLength - 8) * 3 + 2] = 0;
 
         //creating the triangles for the arrow
         //gotta love hard coding, but there is no better way to do this
         //these triangles make the arrow
+        /*
+         *           F\
+         * B_________| \
+         *  \        D  \
+         *   A           >H
+         *  /        E  /
+         * C¯¯¯¯¯¯¯¯¯| /
+         *           G/
+         * table of Points to indecies
+         * A = 1
+         * B = arrowStartIndex
+         * C = arrowStartIndex + 1
+         * D = arrowStartIndex + 2
+         * E = arrowStartIndex + 3
+         * F = arrowStartIndex + 4
+         * G = arrowStartIndex + 5
+         * H = arrowStartIndex + 6
+         * The code below makes traingles ADB, AED, ACE, and FGH in that order 
+         */
         tris[tris.Length - 12] = 1;
-        tris[tris.Length - 11] = startIndex + 2;
-        tris[tris.Length - 10] = startIndex;
+        tris[tris.Length - 11] = arrowStartIndex + 2;
+        tris[tris.Length - 10] = arrowStartIndex;
         tris[tris.Length - 9] = 1;
-        tris[tris.Length - 8] = startIndex + 3;
-        tris[tris.Length - 7] = startIndex + 2;
+        tris[tris.Length - 8] = arrowStartIndex + 3;
+        tris[tris.Length - 7] = arrowStartIndex + 2;
         tris[tris.Length - 6] = 1;
-        tris[tris.Length - 5] = startIndex + 1;
-        tris[tris.Length - 4] = startIndex + 3;
-        tris[tris.Length - 3] = startIndex + 4;
-        tris[tris.Length - 2] = startIndex + 5;
-        tris[tris.Length - 1] = startIndex + 6;
+        tris[tris.Length - 5] = arrowStartIndex + 1;
+        tris[tris.Length - 4] = arrowStartIndex + 3;
+        tris[tris.Length - 3] = arrowStartIndex + 4;
+        tris[tris.Length - 2] = arrowStartIndex + 5;
+        tris[tris.Length - 1] = arrowStartIndex + 6;
 
+        return tris;
+    }
+
+    private static void AssignMeshVertsAndTris(Vector3[] verts, int[] tris, bool lockedOn) {
         if (lockedOn) {
             lockedOnMesh.vertices = verts;
             lockedOnMesh.triangles = tris;
@@ -180,5 +248,61 @@ public static class PlanetMouseoverHUD {
         materialProperties.SetColor("_Color", HUDColor);
 
         Graphics.DrawMesh(lockedOn ? lockedOnMesh : regularMesh, body.Position, rot, Mat, 0, null, 0, materialProperties, false, false, false);
+    }
+
+    private static void DisplayRelativeForwardVelocity(Vector3 relativeVelocity, CelestialBody body, bool lockedOn) {
+        int relativeForwardVelocity = Mathf.RoundToInt(-Vector3.Dot(relativeVelocity, playerCam.transform.forward));
+        //positive means it's moving torwards you
+        //negative means it's moving away from you
+
+        Vector2 relativeOrthagonalVelocity = new Vector2(Vector3.Dot(relativeVelocity, playerCam.transform.right), Vector3.Dot(relativeVelocity, playerCam.transform.up));
+        float angle = Mathf.Atan2(relativeOrthagonalVelocity.y, relativeOrthagonalVelocity.x) * Mathf.Rad2Deg;
+
+        //otherwise, find the direction the arrow is pointing in screen space
+        //if the direction is too far up, draw the text below the planet
+        //otherwise or if the arrowhead is within the ring, put the text above the planet
+
+        float pixelsPerUnit = (playerCam.WorldToScreenPoint(body.Position) - playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up)).magnitude;
+        float outerRadius = body.radius + ((thicknessInPixels + displayDistFromSurfaceOfPlanetInPixels) / pixelsPerUnit);
+
+        //finding the tip of the arrow
+        Vector3[] verts = (lockedOn ? lockedOnMesh : regularMesh).vertices;
+        float maxDistance = float.MinValue;
+
+        foreach (Vector3 vert in verts) {
+            if(vert.magnitude > maxDistance) {
+                maxDistance = vert.magnitude;
+            }
+        }
+
+        Vector2 textPos;
+
+        if(Mathf.Abs(angle - 90) < 30 && maxDistance > outerRadius) {
+            //draw the text below the planet
+            textPos = playerCam.WorldToScreenPoint(body.Position - playerCam.transform.up * outerRadius);
+            textPos.y *= 900f / Screen.height;
+            textPos.x *= 1600f / Screen.width;
+            textPos.y -= 30;
+        } else {
+            //draw the text above the planet
+            textPos = playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up * outerRadius);
+            textPos.y *= 900f / Screen.height;
+            textPos.x *= 1600f / Screen.width;
+            textPos.y += 30;
+        }
+
+        if (lockedOn) {
+            lockedOnText.text = $"{relativeForwardVelocity} m/s";
+            RectTransform textTransform = lockedOnText.GetComponent<RectTransform>();
+            textPos.x -= textTransform.sizeDelta.x / 2f;
+            textPos.y -= textTransform.sizeDelta.y / 2f;
+            textTransform.anchoredPosition = textPos;
+        } else {
+            regularText.text = $"{relativeForwardVelocity} m/s";
+            RectTransform textTransform = regularText.GetComponent<RectTransform>();
+            textPos.x -= textTransform.sizeDelta.x / 2f;
+            textPos.y -= textTransform.sizeDelta.y / 2f;
+            textTransform.anchoredPosition = textPos;
+        }
     }
 }

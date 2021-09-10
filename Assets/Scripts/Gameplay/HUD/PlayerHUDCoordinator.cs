@@ -31,14 +31,16 @@ public class PlayerHUDCoordinator : MonoBehaviour {
 
             for (int i = 0; i < bodies.Length; i++) {
                 Vector3 offsetToPlanet = bodies[i].Position - cam.transform.position;
-                Vector3 projection = cam.transform.position + cam.transform.forward * Vector3.Dot(offsetToPlanet, cam.transform.forward);
-                Vector3 offsetToLine = bodies[i].Position - projection;
-                if (offsetToLine.magnitude < bodies[i].radius) {
-                    //the planet is on the camera's forwards ray
-                    float dstToBody = (bodies[i].Position - cam.transform.position).magnitude - bodies[i].radius;
-                    if (dstToBody < minDistance) {
-                        minDistance = dstToBody;
-                        targetedBodyIndex = i;
+                if (Vector3.Dot(offsetToPlanet, cam.transform.forward) >= 0) {
+                    Vector3 projection = cam.transform.position + cam.transform.forward * Vector3.Dot(offsetToPlanet, cam.transform.forward);
+                    Vector3 offsetToLine = bodies[i].Position - projection;
+                    if (offsetToLine.magnitude < bodies[i].radius) {
+                        //the planet is on the camera's forwards ray
+                        float dstToBody = (bodies[i].Position - cam.transform.position).magnitude - bodies[i].radius;
+                        if (dstToBody < minDistance) {
+                            minDistance = dstToBody;
+                            targetedBodyIndex = i;
+                        }
                     }
                 }
             }
@@ -48,11 +50,13 @@ public class PlayerHUDCoordinator : MonoBehaviour {
             if (targetedBodyIndex == -2) {
                 for (int i = 0; i < bodies.Length; i++) {
                     Vector3 offsetToPlanet = bodies[i].Position - cam.transform.position;
-                    if (offsetToPlanet.magnitude - bodies[i].radius < minSensingDistance) {
-                        float angleToPlanet = Vector3.Angle(cam.transform.forward, offsetToPlanet);
-                        if (angleToPlanet < minAngleToBeConsidered && angleToPlanet < minAngle) {
-                            minAngle = angleToPlanet;
-                            targetedBodyIndex = i;
+                    if (Vector3.Dot(offsetToPlanet, cam.transform.forward) >= 0) {
+                        if (offsetToPlanet.magnitude - bodies[i].radius < minSensingDistance) {
+                            float angleToPlanet = Vector3.Angle(cam.transform.forward, offsetToPlanet);
+                            if (angleToPlanet < minAngleToBeConsidered && angleToPlanet < minAngle) {
+                                minAngle = angleToPlanet;
+                                targetedBodyIndex = i;
+                            }
                         }
                     }
                 }
