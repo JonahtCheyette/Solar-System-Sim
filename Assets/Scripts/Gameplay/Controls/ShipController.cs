@@ -130,10 +130,6 @@ public class ShipController : MonoBehaviour {
         }
     }
 
-    private void findPlanetLookingAt() {
-
-    }
-
     private void InitializeRigidBody() {
         //rigidBody.interpolation = RigidbodyInterpolation.Interpolate; this is supposed to fix jitteriness, but for me it caused it instead
         rigidBody.useGravity = false;

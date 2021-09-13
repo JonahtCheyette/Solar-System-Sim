@@ -16,13 +16,12 @@ public static class InteractionHandler {
     public static void Initialize(Transform player) {
         interactionText = GameObject.Find("Interact Text").GetComponent<Text>();
         canvasSize = interactionText.GetComponentInParent<CanvasScaler>().referenceResolution;
-        RectTransform textTransform = interactionText.GetComponent<RectTransform>();
         // setting the position/size of the text window
-        textTransform.anchorMin = Vector2.one * 0.5f;
-        textTransform.anchorMax = Vector2.one * 0.5f;
-        textTransform.pivot = Vector2.one * 0.5f;
-        textTransform.sizeDelta = new Vector2(canvasSize.x, 150);
-        textTransform.anchoredPosition = new Vector2(0, -canvasSize.y * 0.375f);
+        interactionText.rectTransform.anchorMin = Vector2.one * 0.5f;
+        interactionText.rectTransform.anchorMax = Vector2.one * 0.5f;
+        interactionText.rectTransform.pivot = Vector2.one * 0.5f;
+        interactionText.rectTransform.sizeDelta = new Vector2(canvasSize.x, 150);
+        interactionText.rectTransform.anchoredPosition = new Vector2(0, -canvasSize.y * 0.375f);
         // setting the basic text settings
         interactionText.text = "";
         interactionText.fontSize = 44;

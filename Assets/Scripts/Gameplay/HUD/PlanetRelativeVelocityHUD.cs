@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public static class PlanetMouseoverHUD {
+public static class PlanetRelativeVelocityHUD {
     //planned HUD:
     //ring around planet that has mouseover
     //arrow in direction of movement, porportional to speed of movement (will need a maximum length)
@@ -29,6 +29,7 @@ public static class PlanetMouseoverHUD {
     private static Mesh regularMesh;
     private static Text lockedOnText;
     private static Text regularText;
+    private static Image arrowToLockOnPlanet;
 
     private static MaterialPropertyBlock materialProperties;
 
@@ -37,20 +38,32 @@ public static class PlanetMouseoverHUD {
     private static float arrowheadThicknessInPixels = 12;
     private static float maxArrowLengthInPixels = 200f;
 
+    private static float textDistanceFromRing = 65f;
+    private static float arrowTextToleranceAngle = 20f;
+    private static float textArrowLengthTolerance = 25f;
+
     //make a mesh at the Planet's location, then display it on the screen
     public static void DrawPlanetHUD(CelestialBody body, Vector3 playerVelocity, bool lockedOn) {
         Initialize();
-        if ((playerCam.transform.position - body.transform.position).magnitude - body.radius >= fadeOutRange.x) {
-            //if we're close enough to the planet that the mesh is even gonna be drawn, otherwise why bother
-            Vector3 dirToPlayer = (playerCam.transform.position - body.Position).normalized;
-            Vector3 relativeVelocity = body.RigidBody.velocity - playerVelocity;
-            CreateMesh(body, relativeVelocity, lockedOn);
-            DrawMesh(body, dirToPlayer, relativeVelocity, lockedOn);
-            DisplayRelativeForwardVelocity(relativeVelocity, body, lockedOn);
+        if (lockedOn && !body.gameObject.GetComponent<MeshRenderer>().isVisible) {
+            DrawArrowToPlanet(body);
+            HideText(true);
+        } else {
+            if ((playerCam.transform.position - body.transform.position).magnitude - body.radius >= fadeOutRange.x) {
+                //if we're close enough to the planet that the mesh is even gonna be drawn, otherwise why bother
+                Vector3 dirToPlayer = (playerCam.transform.position - body.Position).normalized;
+                Vector3 relativeVelocity = body.RigidBody.velocity - playerVelocity;
+                
+
+                CreateMesh(body, relativeVelocity, lockedOn);
+                DrawMesh(body, dirToPlayer, relativeVelocity, lockedOn);
+                DisplayRelativeForwardVelocity(relativeVelocity, body, lockedOn);
+            }
+            HideArrowToPlanet();
         }
     }
 
-    private static void Initialize() {
+    public static void Initialize() {
         if (materialProperties == null) {
             materialProperties = new MaterialPropertyBlock();
         }
@@ -67,30 +80,35 @@ public static class PlanetMouseoverHUD {
             Mat = new Material(Shader.Find("Unlit/PlanetHUD"));
         }
         if (lockedOnText == null) {
-            lockedOnText = GameObject.Find("Locked On Planet Vel Text").GetComponent<Text>();
+            lockedOnText = GameObject.Find("Locked On Planet Info Text").GetComponent<Text>();
             lockedOnText.text = "";
-            lockedOnText.color = lockedOnColor;
             lockedOnText.fontSize = 44;
+            lockedOnText.color = lockedOnColor;
             lockedOnText.alignment = TextAnchor.MiddleCenter;
-            RectTransform textTransform = lockedOnText.GetComponent<RectTransform>();
-            textTransform.anchorMin = Vector2.zero;
-            textTransform.anchorMax = Vector2.zero;
-            textTransform.pivot = Vector2.zero;
-            textTransform.sizeDelta = new Vector2(240, 50);
+            lockedOnText.rectTransform.sizeDelta = new Vector2(600, 102);
+            lockedOnText.rectTransform.pivot = Vector2.one * 0.5f;
+            lockedOnText.rectTransform.anchorMin = Vector2.zero;
+            lockedOnText.rectTransform.anchorMax = Vector2.zero;
         }
         if (regularText == null) {
-            regularText = GameObject.Find("Regular Planet Vel Text").GetComponent<Text>();
+            regularText = GameObject.Find("Regular Planet Info Text").GetComponent<Text>();
             regularText.text = "";
+            regularText.fontSize = 44;
             Color col = regularColor;
             col.a = regularAlpha;
             regularText.color = col;
-            regularText.fontSize = 44;
             regularText.alignment = TextAnchor.MiddleCenter;
-            RectTransform textTransform = regularText.GetComponent<RectTransform>();
-            textTransform.anchorMin = Vector2.zero;
-            textTransform.anchorMax = Vector2.zero;
-            textTransform.pivot = Vector2.zero;
-            textTransform.sizeDelta = new Vector2(240, 50);
+            regularText.rectTransform.sizeDelta = new Vector2(600, 102);
+            regularText.rectTransform.pivot = Vector2.one * 0.5f;
+            regularText.rectTransform.anchorMin = Vector2.zero;
+            regularText.rectTransform.anchorMax = Vector2.zero;
+        }
+        if (arrowToLockOnPlanet == null) {
+            arrowToLockOnPlanet = GameObject.Find("Arrow To Planet").GetComponent<Image>();
+            arrowToLockOnPlanet.rectTransform.pivot = Vector2.one * 0.5f;
+            arrowToLockOnPlanet.rectTransform.anchorMin = Vector2.one * 0.5f;
+            arrowToLockOnPlanet.rectTransform.anchorMax = Vector2.one * 0.5f;
+            arrowToLockOnPlanet.enabled = false;
         }
     }
 
@@ -108,6 +126,7 @@ public static class PlanetMouseoverHUD {
         Vector2 relativeOrthagonalVelocity = new Vector2(Vector3.Dot(relativeVelocity, playerCam.transform.right), Vector3.Dot(relativeVelocity, playerCam.transform.up));
         //since we're drawing the ring around the actual planet, we need to scale the size so it appears the same at any distance
         //divide a measurement (in pixels) by this to get how large it should be in units to display that large
+
         float pixelsPerUnit = (playerCam.WorldToScreenPoint(body.Position) - playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up)).magnitude;
         float dstScaledByDistance = displayDistFromSurfaceOfPlanetInPixels / pixelsPerUnit;
         if (lockedOn) {
@@ -235,7 +254,7 @@ public static class PlanetMouseoverHUD {
     }
 
     private static void DrawMesh(CelestialBody body, Vector3 dirToPlayer, Vector3 relativeVelocity, bool lockedOn) {
-        Vector3 worldOrthagonalVelocity = relativeVelocity - Vector3.Project(relativeVelocity, playerCam.transform.forward);
+        Vector3 worldOrthagonalVelocity = Vector3.ProjectOnPlane(relativeVelocity, playerCam.transform.forward);
         Quaternion rot = Quaternion.AngleAxis(90, dirToPlayer) * Quaternion.LookRotation(dirToPlayer, worldOrthagonalVelocity.normalized);
 
         float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - body.transform.position).magnitude - body.radius));
@@ -251,7 +270,7 @@ public static class PlanetMouseoverHUD {
     }
 
     private static void DisplayRelativeForwardVelocity(Vector3 relativeVelocity, CelestialBody body, bool lockedOn) {
-        int relativeForwardVelocity = Mathf.RoundToInt(-Vector3.Dot(relativeVelocity, playerCam.transform.forward));
+        int relativeForwardVelocity = Mathf.RoundToInt(Vector3.Dot(relativeVelocity, (playerCam.transform.position - body.Position).normalized));
         //positive means it's moving torwards you
         //negative means it's moving away from you
 
@@ -275,34 +294,69 @@ public static class PlanetMouseoverHUD {
             }
         }
 
+        Vector2 textPos = GetTextPos(angle, maxDistance, outerRadius, body);
+        DrawRelativeVelocityText(lockedOn, relativeForwardVelocity, textPos, body);
+    }
+
+    private static Vector2 GetTextPos(float angle, float maxDistance, float outerRadius, CelestialBody body) {
         Vector2 textPos;
 
-        if(Mathf.Abs(angle - 90) < 30 && maxDistance > outerRadius) {
+        if (Mathf.Abs(angle - 90) < arrowTextToleranceAngle && maxDistance > outerRadius + textArrowLengthTolerance) {
             //draw the text below the planet
             textPos = playerCam.WorldToScreenPoint(body.Position - playerCam.transform.up * outerRadius);
             textPos.y *= 900f / Screen.height;
             textPos.x *= 1600f / Screen.width;
-            textPos.y -= 30;
+            textPos.y -= textDistanceFromRing;
         } else {
             //draw the text above the planet
             textPos = playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up * outerRadius);
             textPos.y *= 900f / Screen.height;
             textPos.x *= 1600f / Screen.width;
-            textPos.y += 30;
+            textPos.y += textDistanceFromRing;
         }
 
+        return textPos;
+    }
+
+    private static void DrawRelativeVelocityText(bool lockedOn, int relativeForwardVelocity, Vector2 textPos, CelestialBody body) {
         if (lockedOn) {
-            lockedOnText.text = $"{relativeForwardVelocity} m/s";
-            RectTransform textTransform = lockedOnText.GetComponent<RectTransform>();
-            textPos.x -= textTransform.sizeDelta.x / 2f;
-            textPos.y -= textTransform.sizeDelta.y / 2f;
-            textTransform.anchoredPosition = textPos;
+            if (!lockedOnText.enabled) {
+                lockedOnText.enabled = true;
+            }
+            lockedOnText.text = $"{body.name}\n{relativeForwardVelocity} m/s";
+            lockedOnText.rectTransform.anchoredPosition = textPos;
         } else {
-            regularText.text = $"{relativeForwardVelocity} m/s";
-            RectTransform textTransform = regularText.GetComponent<RectTransform>();
-            textPos.x -= textTransform.sizeDelta.x / 2f;
-            textPos.y -= textTransform.sizeDelta.y / 2f;
-            textTransform.anchoredPosition = textPos;
+            if (!regularText.enabled) {
+                regularText.enabled = true;
+            }
+            regularText.text = $"{body.name}\n{relativeForwardVelocity} m/s";
+            regularText.rectTransform.anchoredPosition = textPos;
+        }
+    }
+
+    public static void HideText(bool lockedOn) {
+        if (lockedOn) {
+            lockedOnText.enabled = false;
+        } else {
+            regularText.enabled = false;
+        }
+    }
+
+    private static void DrawArrowToPlanet(CelestialBody body) {
+        if (!arrowToLockOnPlanet.enabled) {
+            arrowToLockOnPlanet.enabled = true;
+        }
+        Quaternion halfwayRotToPlanet = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(playerCam.transform.forward, (body.Position - playerCam.transform.position).normalized), 0.5f);
+        Vector3 test = halfwayRotToPlanet * playerCam.transform.forward;
+        test = Vector3.ProjectOnPlane(test, playerCam.transform.forward).normalized;
+        float angle = Vector3.SignedAngle(playerCam.transform.right, test, playerCam.transform.forward);
+        arrowToLockOnPlanet.rectTransform.rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
+        arrowToLockOnPlanet.rectTransform.anchoredPosition = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)) * 400f;
+    }
+
+    private static void HideArrowToPlanet() {
+        if (arrowToLockOnPlanet.enabled) {
+            arrowToLockOnPlanet.enabled = false;
         }
     }
 }
