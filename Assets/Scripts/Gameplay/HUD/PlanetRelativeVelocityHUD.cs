@@ -301,15 +301,25 @@ public static class PlanetRelativeVelocityHUD {
     private static Vector2 GetTextPos(float angle, float maxDistance, float outerRadius, CelestialBody body) {
         Vector2 textPos;
 
+        Vector3 offsetToPlanet = body.Position - playerCam.transform.position;
+        //this is the point on a certain plane that the camera is looking at
+        //the plane in this case is defined by the body's position and a normal pointing from the body to the camera
+        Vector3 pointOnBodyPlaneCameraIsLookingAt = (offsetToPlanet.magnitude/Vector3.Dot(offsetToPlanet.normalized, playerCam.transform.forward)) * playerCam.transform.forward + playerCam.transform.position;
+        
+        //this plane normal is perpendicular to both the offset from the camera to the planet and the camera's up direction
+        Vector3 planeNormal = Vector3.Cross(offsetToPlanet, playerCam.transform.up).normalized;
+        Vector3 flattened = Vector3.ProjectOnPlane(body.Position - pointOnBodyPlaneCameraIsLookingAt, planeNormal).normalized * outerRadius;
+        flattened *= Mathf.Sign(Vector3.Dot(flattened, playerCam.transform.up));
+
         if (Mathf.Abs(angle - 90) < arrowTextToleranceAngle && maxDistance > outerRadius + textArrowLengthTolerance) {
             //draw the text below the planet
-            textPos = playerCam.WorldToScreenPoint(body.Position - playerCam.transform.up * outerRadius);
+            textPos = playerCam.WorldToScreenPoint(body.Position - flattened);
             textPos.y *= 900f / Screen.height;
             textPos.x *= 1600f / Screen.width;
             textPos.y -= textDistanceFromRing;
         } else {
             //draw the text above the planet
-            textPos = playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up * outerRadius);
+            textPos = playerCam.WorldToScreenPoint(body.Position + flattened);
             textPos.y *= 900f / Screen.height;
             textPos.x *= 1600f / Screen.width;
             textPos.y += textDistanceFromRing;

@@ -8,6 +8,7 @@ public class PlayerHUDCoordinator : MonoBehaviour {
     // Start is called before the first frame update
     void Start() {
         InteractionHandler.Initialize(transform);
+        PlanetRelativeVelocityHUD.Initialize();
         //PlanetRelativeVelocityHUD.Initialize();
         ship = FindObjectOfType<ShipController>();
         bodies = FindObjectsOfType<CelestialBody>();
