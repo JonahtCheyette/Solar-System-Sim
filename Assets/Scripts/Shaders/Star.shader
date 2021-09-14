@@ -3,6 +3,7 @@
     Properties
     {
         _Color("Color", Color) = (1,1,1,1)
+        _CoronaSize("Corona Size", Float) = 0.33
     }
     SubShader
     {
@@ -33,10 +34,7 @@
             static const float PI = 3.14159265f;
 
             float4 _Color;
-            float coronaRadius;
-            float starRadius;
-            //just easier to have it set as a float4 from c# code, as that allows me to use SetVector
-            float4 center;
+            float _CoronaSize;
 
             v2f vert (appdata v) {
                 v2f o;
@@ -46,13 +44,14 @@
             }
 
             fixed4 frag(v2f i) : SV_Target{
-                float3 cameraToCenter = center.xyz - _WorldSpaceCameraPos;
+                float3 center = mul(unity_ObjectToWorld, float4(0,0,0,1)).xyz;
+                float3 cameraToCenter = center - _WorldSpaceCameraPos;  
                 if (UNITY_MATRIX_P[3][3] == 1) {
                     //orthographic
                     cameraToCenter = mul((float3x3)unity_CameraToWorld, float3(0, 0, 1));
                 }
-                float distanceToCenter = coronaRadius * sin(acos(dot(normalize(i.worldPos - center.xyz), -normalize(cameraToCenter))));
-                float x = max((coronaRadius - distanceToCenter) / (coronaRadius - starRadius), 0);
+                float distanceToCenter = sin(acos(dot(normalize(i.worldPos - center), -normalize(cameraToCenter))));
+                float x = min((1 - distanceToCenter) / (_CoronaSize), 1);
                 
                 return float4(_Color.rgb, pow(x, 3));
             }

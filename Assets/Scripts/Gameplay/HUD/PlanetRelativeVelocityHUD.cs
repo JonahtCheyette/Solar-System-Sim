@@ -4,14 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public static class PlanetRelativeVelocityHUD {
-    //planned HUD:
-    //ring around planet that has mouseover
-    //arrow in direction of movement, porportional to speed of movement (will need a maximum length)
-    //ring is slightly see-through
-    //ring shrinks and is brighter if locked on
-    //lock on color?
-    //text at top saying name of planet, distance, relative velocity (on plane perpendicular to direction planet is being viewed on), relative velocity (in the direction the planet is being viewed from, red if planet is going further away, blue otherwise)
-    //need a more elegant system for relative velocity than the 2 numbers
     private static Color lockedOnColor = Color.white;
     private static Color regularColor = Color.grey;
     private static float regularAlpha = 0.75f;
