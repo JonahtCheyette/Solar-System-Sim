@@ -54,7 +54,6 @@ public static class PlanetRelativeVelocityHUD {
                 Vector3 dirToPlayer = (playerCam.transform.position - body.Position).normalized;
                 Vector3 relativeVelocity = body.RigidBody.velocity - playerVelocity;
                 
-
                 CreateMesh(body, relativeVelocity, lockedOn);
                 DrawMesh(body, dirToPlayer, relativeVelocity, lockedOn);
                 DisplayRelativeForwardVelocity(relativeVelocity, body, lockedOn);
@@ -64,12 +63,15 @@ public static class PlanetRelativeVelocityHUD {
     }
 
     public static void Initialize() {
-        if (materialProperties == null) {
-            materialProperties = new MaterialPropertyBlock();
-        }
         if (playerCam == null) {
             playerCam = Camera.main;
         }
+        InitializeMeshNecessities();
+        InitializeTextBoxes();
+        InitializeArrowToPlanet();
+    }
+
+    private static void InitializeMeshNecessities() {
         if (lockedOnMesh == null) {
             lockedOnMesh = new Mesh();
         }
@@ -79,6 +81,22 @@ public static class PlanetRelativeVelocityHUD {
         if (Mat == null) {
             Mat = new Material(Shader.Find("Unlit/PlanetHUD"));
         }
+        if (materialProperties == null) {
+            materialProperties = new MaterialPropertyBlock();
+        }
+    }
+
+    private static void InitializeArrowToPlanet() {
+        if (arrowToLockOnPlanet == null) {
+            arrowToLockOnPlanet = GameObject.Find("Arrow To Planet").GetComponent<Image>();
+            arrowToLockOnPlanet.rectTransform.pivot = Vector2.one * 0.5f;
+            arrowToLockOnPlanet.rectTransform.anchorMin = Vector2.one * 0.5f;
+            arrowToLockOnPlanet.rectTransform.anchorMax = Vector2.one * 0.5f;
+            arrowToLockOnPlanet.enabled = false;
+        }
+    }
+
+    private static void InitializeTextBoxes() {
         if (lockedOnText == null) {
             lockedOnText = GameObject.Find("Locked On Planet Info Text").GetComponent<Text>();
             lockedOnText.text = "";
@@ -102,13 +120,6 @@ public static class PlanetRelativeVelocityHUD {
             regularText.rectTransform.pivot = Vector2.one * 0.5f;
             regularText.rectTransform.anchorMin = Vector2.zero;
             regularText.rectTransform.anchorMax = Vector2.zero;
-        }
-        if (arrowToLockOnPlanet == null) {
-            arrowToLockOnPlanet = GameObject.Find("Arrow To Planet").GetComponent<Image>();
-            arrowToLockOnPlanet.rectTransform.pivot = Vector2.one * 0.5f;
-            arrowToLockOnPlanet.rectTransform.anchorMin = Vector2.one * 0.5f;
-            arrowToLockOnPlanet.rectTransform.anchorMax = Vector2.one * 0.5f;
-            arrowToLockOnPlanet.enabled = false;
         }
     }
 
@@ -339,6 +350,11 @@ public static class PlanetRelativeVelocityHUD {
             if (!regularText.enabled) {
                 regularText.enabled = true;
             }
+            float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - body.transform.position).magnitude - body.radius));
+            alpha *= regularAlpha;
+            Color HUDColor = lockedOn ? lockedOnColor : regularColor;
+            HUDColor.a = alpha;
+            regularText.color = HUDColor;
             regularText.text = $"{body.name}\n{relativeForwardVelocity} m/s";
             regularText.rectTransform.anchoredPosition = textPos;
         }
