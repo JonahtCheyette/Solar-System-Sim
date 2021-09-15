@@ -45,10 +45,15 @@ public static class PlanetRelativeVelocityHUD {
                 //if we're close enough to the planet that the mesh is even gonna be drawn, otherwise why bother
                 Vector3 dirToPlayer = (playerCam.transform.position - body.Position).normalized;
                 Vector3 relativeVelocity = body.RigidBody.velocity - playerVelocity;
-                
-                CreateMesh(body, relativeVelocity, lockedOn);
+                //since we're drawing the ring around the actual planet, we need to scale the size so it appears the same at any distance
+                //multiply a measurement (in units) by this to get how large it is in pixels
+                float pixelsPerUnit = ((Vector2)(playerCam.WorldToScreenPoint(body.Position) - playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up))).magnitude;
+                //multiply a measurement (in pixels) by this to get how large it is in units
+                float unitsPerPixel = 1 / pixelsPerUnit;
+
+                CreateMesh(body, relativeVelocity, lockedOn, unitsPerPixel);
                 DrawMesh(body, dirToPlayer, relativeVelocity, lockedOn);
-                DisplayRelativeForwardVelocity(relativeVelocity, body, lockedOn);
+                DisplayRelativeForwardVelocity(relativeVelocity, body, lockedOn, unitsPerPixel);
             }
             HideArrowToPlanet();
         }
@@ -115,34 +120,30 @@ public static class PlanetRelativeVelocityHUD {
         }
     }
 
-    private static void CreateMesh(CelestialBody body, Vector3 relativeVelocity, bool lockedOn) {
+    private static void CreateMesh(CelestialBody body, Vector3 relativeVelocity, bool lockedOn, float unitsPerPixel) {
         int numSegments = Mathf.Max(8, HUDRes);
         int arrowStartIndex = numSegments * 2;
 
-        Vector3[] verts = CreateVerts(body, relativeVelocity, lockedOn, numSegments, arrowStartIndex);
+        Vector3[] verts = CreateVerts(body, relativeVelocity, lockedOn, numSegments, arrowStartIndex, unitsPerPixel);
         int[] tris = CreateTris(verts.Length, numSegments, arrowStartIndex);
 
         AssignMeshVertsAndTris(verts, tris, lockedOn);
     }
 
-    private static Vector3[] CreateVerts(CelestialBody body, Vector3 relativeVelocity, bool lockedOn, int numSegments, int arrowStartIndex) {
+    private static Vector3[] CreateVerts(CelestialBody body, Vector3 relativeVelocity, bool lockedOn, int numSegments, int arrowStartIndex, float unitsPerPixel) {
         Vector2 relativeOrthagonalVelocity = new Vector2(Vector3.Dot(relativeVelocity, playerCam.transform.right), Vector3.Dot(relativeVelocity, playerCam.transform.up));
-        //since we're drawing the ring around the actual planet, we need to scale the size so it appears the same at any distance
-        //divide a measurement (in pixels) by this to get how large it should be in units to display that large
-
-        float pixelsPerUnit = (playerCam.WorldToScreenPoint(body.Position) - playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up)).magnitude;
-        float dstScaledByDistance = displayDistFromSurfaceOfPlanetInPixels / pixelsPerUnit;
+        float dstScaledByDistance = displayDistFromSurfaceOfPlanetInPixels * unitsPerPixel;
         if (lockedOn) {
             dstScaledByDistance /= 2f;
         }
-        float thicknessScaledByDistance = thicknessInPixels / pixelsPerUnit;
+        float thicknessScaledByDistance = thicknessInPixels * unitsPerPixel;
         float innerRadius = body.radius + dstScaledByDistance;
         float outerRadius = innerRadius + thicknessScaledByDistance;
         float arrowLengthInPixels = relativeOrthagonalVelocity.magnitude;
-        float arrowThickness = arrowThicknessInPixels / pixelsPerUnit;
-        float arrowheadThickness = arrowheadThicknessInPixels / pixelsPerUnit;
-        float arrowheadLength = Mathf.Min(arrowheadLengthInPixels, arrowLengthInPixels) / pixelsPerUnit;
-        float length = Mathf.Min(arrowLengthInPixels, maxArrowLengthInPixels) / pixelsPerUnit;
+        float arrowThickness = arrowThicknessInPixels * unitsPerPixel;
+        float arrowheadThickness = arrowheadThicknessInPixels * unitsPerPixel;
+        float arrowheadLength = Mathf.Min(arrowheadLengthInPixels, arrowLengthInPixels) * unitsPerPixel;
+        float length = Mathf.Min(arrowLengthInPixels, maxArrowLengthInPixels) * unitsPerPixel;
         float angleIncrement = 2 * Mathf.PI / numSegments;
 
         Vector3[] verts = new Vector3[numSegments * 2 + 7];
@@ -272,7 +273,7 @@ public static class PlanetRelativeVelocityHUD {
         Graphics.DrawMesh(lockedOn ? lockedOnMesh : regularMesh, body.Position, rot, Mat, 0, null, 0, materialProperties, false, false, false);
     }
 
-    private static void DisplayRelativeForwardVelocity(Vector3 relativeVelocity, CelestialBody body, bool lockedOn) {
+    private static void DisplayRelativeForwardVelocity(Vector3 relativeVelocity, CelestialBody body, bool lockedOn, float unitsPerPixel) {
         int relativeForwardVelocity = Mathf.RoundToInt(Vector3.Dot(relativeVelocity, (playerCam.transform.position - body.Position).normalized));
         //positive means it's moving torwards you
         //negative means it's moving away from you
@@ -283,9 +284,7 @@ public static class PlanetRelativeVelocityHUD {
         //otherwise, find the direction the arrow is pointing in screen space
         //if the direction is too far up, draw the text below the planet
         //otherwise or if the arrowhead is within the ring, put the text above the planet
-
-        float pixelsPerUnit = (playerCam.WorldToScreenPoint(body.Position) - playerCam.WorldToScreenPoint(body.Position + playerCam.transform.up)).magnitude;
-        float outerRadius = body.radius + ((thicknessInPixels + displayDistFromSurfaceOfPlanetInPixels) / pixelsPerUnit);
+        float outerRadius = body.radius + ((thicknessInPixels + displayDistFromSurfaceOfPlanetInPixels) * unitsPerPixel);
 
         //finding the tip of the arrow
         Vector3[] verts = (lockedOn ? lockedOnMesh : regularMesh).vertices;
