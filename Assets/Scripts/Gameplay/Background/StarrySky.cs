@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class StarrySky : MonoBehaviour {
-    public int numStars = 1000;
+    public int numberOfStars = 1000;
     public int starResolution = 50;
+
+    public Color highlightColor1;
+    public Color highlightColor2;
+
     public Vector2 sizeRange = new Vector2(2, 4);
 
     private Camera playerCam;
@@ -13,6 +17,8 @@ public class StarrySky : MonoBehaviour {
     private Mesh starMesh;
 
     private ComputeBuffer transformationBuffer;
+    private ComputeBuffer colorBuffer;
+    private ComputeBuffer scaleBuffer;
 
     private ComputeBuffer argBuffer;
 
@@ -77,33 +83,80 @@ public class StarrySky : MonoBehaviour {
 
     private void SetUpMaterial() {
         mat = new Material(Shader.Find("Unlit/StarrySky"));
-        SetUpTransformationBuffer();
+        SetUpBuffers();
         SetStaticMaterialProperties();
     }
 
+    private void SetUpBuffers() {
+        SetUpScaleBuffer();
+        SetUpTransformationBuffer();
+        SetUpColorBuffer();
+    }
+
     private void SetUpTransformationBuffer() {
-        if(transformationBuffer == null) {
-            transformationBuffer = new ComputeBuffer(numStars, sizeof(float) * 16);
+        if (transformationBuffer == null) {
+            transformationBuffer = new ComputeBuffer(numberOfStars, sizeof(float) * 16);
         }
 
         transformationBuffer.SetData(CreateTransformations());
     }
 
     private Matrix4x4[] CreateTransformations() {
-        Matrix4x4[] transformations = new Matrix4x4[numStars];
+        Matrix4x4[] transformations = new Matrix4x4[numberOfStars];
+        float[] scales = new float[numberOfStars];
+        scaleBuffer.GetData(scales);
 
-        for (int i = 0; i < numStars; i++) {
+        for (int i = 0; i < numberOfStars; i++) {
             Vector3 positionOffset = Random.insideUnitSphere.normalized * (playerCam.farClipPlane - 1f);
             Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, positionOffset.normalized);
-            Vector3 scale = Vector3.one * Mathf.Tan(Random.Range(sizeRange.x, sizeRange.y) * Mathf.Deg2Rad / 2f) * (playerCam.farClipPlane - 1f);
+            Vector3 scale = Vector3.one * scales[i];
             transformations[i] = Matrix4x4.TRS(positionOffset, rotation, scale);
         }
 
         return transformations;
     }
 
+    private void SetUpColorBuffer() {
+        if (colorBuffer == null) {
+            colorBuffer = new ComputeBuffer(numberOfStars, sizeof(float) * 3);
+        }
+
+        colorBuffer.SetData(CreateColors());
+    }
+
+    private Vector3[] CreateColors() {
+        Vector3[] colors = new Vector3[numberOfStars];
+
+        for (int i = 0; i < numberOfStars; i++) {
+            Color highlightColor = Color.Lerp(highlightColor1, highlightColor2, Random.value);
+            colors[i] = new Vector3(highlightColor.r, highlightColor.g, highlightColor.b);
+        }
+
+        return colors;
+    }
+
+    private void SetUpScaleBuffer() {
+        if (scaleBuffer == null) {
+            scaleBuffer = new ComputeBuffer(numberOfStars, sizeof(float));
+        }
+
+        scaleBuffer.SetData(CreateScales());
+    }
+
+    private float[] CreateScales() {
+        float[] scales = new float[numberOfStars];
+
+        for (int i = 0; i < numberOfStars; i++) {
+            scales[i] = Mathf.Tan(Random.Range(sizeRange.x, sizeRange.y) * Mathf.Deg2Rad / 2f) * (playerCam.farClipPlane - 1f);
+        }
+
+        return scales;
+    }
+
     private void SetStaticMaterialProperties() {
         mat.SetBuffer("transformations", transformationBuffer);
+        mat.SetBuffer("colors", colorBuffer);
+        mat.SetBuffer("scales", scaleBuffer);
     }
 
     private void SetUpBounds() {
@@ -115,13 +168,14 @@ public class StarrySky : MonoBehaviour {
             argBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
         }
 
-        argBuffer.SetData(new uint[] { starMesh.GetIndexCount(0), (uint)numStars, 0, 0, 0 });
+        argBuffer.SetData(new uint[] { starMesh.GetIndexCount(0), (uint)numberOfStars, 0, 0, 0 });
     }
 
     private void Update() {
         UpdateBounds();
         UpdateDynamicMaterialValues();
-        Graphics.DrawMeshInstancedIndirect(starMesh, 0, mat, starSphereBounds, argBuffer, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0);
+        //Graphics.DrawMeshInstancedIndirect(starMesh, 0, mat, starSphereBounds, argBuffer, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, playerCam);
+        Graphics.DrawMeshInstancedIndirect(starMesh, 0, mat, starSphereBounds, argBuffer, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, null);
     }
 
     private void UpdateBounds() {
@@ -129,7 +183,7 @@ public class StarrySky : MonoBehaviour {
     }
 
     private void UpdateDynamicMaterialValues() {
-        mat.SetVector("center", playerCam.transform.position);
+        mat.SetVector("cameraPos", playerCam.transform.position);
     }
 
     private void OnDisable() {
@@ -147,6 +201,12 @@ public class StarrySky : MonoBehaviour {
     private void DestroyBuffers() {
         if (transformationBuffer != null) {
             transformationBuffer.Release();
+        }
+        if (colorBuffer != null) {
+            colorBuffer.Release();
+        }
+        if (scaleBuffer != null) {
+            scaleBuffer.Release();
         }
         if (argBuffer != null) {
             argBuffer.Release();

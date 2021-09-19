@@ -1996,9 +1996,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fddbe3981ee1429488648df329c414d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numStars: 20000
+  numStars: 2000
   starResolution: 50
-  sizeRange: {x: 90, y: 90}
+  sizeRange: {x: 0.25, y: 0.3}
 --- !u!1 &787213761
 GameObject:
   m_ObjectHideFlags: 0
