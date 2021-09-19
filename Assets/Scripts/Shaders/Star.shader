@@ -28,7 +28,7 @@
 
             struct v2f {
                 float4 vertex : SV_POSITION;
-                float3 worldPos : TEXCOORD0;
+                half3 worldNormal : TEXCOORD0;
             };
 
             static const float PI = 3.14159265f;
@@ -38,7 +38,7 @@
 
             v2f vert (appdata v) {
                 v2f o;
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 return o;
             }
@@ -50,7 +50,7 @@
                     //orthographic
                     cameraToCenter = mul((float3x3)unity_CameraToWorld, float3(0, 0, 1));
                 }
-                float distanceToCenter = sin(acos(dot(normalize(i.worldPos - center), -normalize(cameraToCenter))));
+                float distanceToCenter = sin(acos(dot(i.worldNormal, -normalize(cameraToCenter))));
                 float x = min((1 - distanceToCenter) / (_CoronaSize), 1);
                 
                 return float4(_Color.rgb, pow(x, 3));
