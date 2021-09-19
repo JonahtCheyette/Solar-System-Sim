@@ -5,11 +5,17 @@ using UnityEngine;
 public class StarrySky : MonoBehaviour {
     public int numberOfStars = 1000;
     public int starResolution = 50;
+    public Vector2 sizeRange = new Vector2(2, 4);
 
     public Color highlightColor1;
     public Color highlightColor2;
 
-    public Vector2 sizeRange = new Vector2(2, 4);
+    public Vector3 galaxyEndA = Vector3.up;
+    public Vector3 galaxyEndB = Vector3.right;
+
+    [Min(1)]
+    public int numStarTests = 2;
+    public float test;
 
     private Camera playerCam;
     private Material mat;
@@ -94,6 +100,9 @@ public class StarrySky : MonoBehaviour {
     }
 
     private void SetUpTransformationBuffer() {
+        if(transformationBuffer != null && transformationBuffer.count != numberOfStars) {
+            transformationBuffer.Release();
+        }
         if (transformationBuffer == null) {
             transformationBuffer = new ComputeBuffer(numberOfStars, sizeof(float) * 16);
         }
@@ -107,7 +116,7 @@ public class StarrySky : MonoBehaviour {
         scaleBuffer.GetData(scales);
 
         for (int i = 0; i < numberOfStars; i++) {
-            Vector3 positionOffset = Random.insideUnitSphere.normalized * (playerCam.farClipPlane - 1f);
+            Vector3 positionOffset = GetStarDir(numStarTests) * (playerCam.farClipPlane - 1f);
             Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, positionOffset.normalized);
             Vector3 scale = Vector3.one * scales[i];
             transformations[i] = Matrix4x4.TRS(positionOffset, rotation, scale);
@@ -116,26 +125,79 @@ public class StarrySky : MonoBehaviour {
         return transformations;
     }
 
+    private Vector3 GetStarDir(int numTests) {
+        Vector3 starDir = Vector3.right;
+        float minDist = float.MaxValue;
+        Vector3 galaxyCenter = Vector3.Lerp(galaxyEndA, galaxyEndB, 0.5f).normalized;
+        Vector3 galaxyEndASP = StereographicProjection(galaxyEndA, -galaxyCenter);
+        Vector3 galaxyEndBSP = StereographicProjection(galaxyEndB, -galaxyCenter);
+        Vector3 lastStarDir = Vector3.right;
+        bool inGalaxy = false;
+
+        for (int i = 0; i < numTests; i++) {
+            Vector3 testDir = Random.onUnitSphere;
+            float dist = DistToGalaxy(testDir, galaxyEndASP, galaxyEndBSP, -galaxyCenter);
+            if (dist < test) {
+                inGalaxy = true;
+                if (dist < minDist) {
+                    minDist = dist;
+                    starDir = testDir;
+                }
+            } else {
+                lastStarDir = testDir;
+            }
+        }
+
+        if (inGalaxy) {
+            return starDir;
+        }
+        return lastStarDir;
+    }
+
+    private Vector3 StereographicProjection(Vector3 pointOnSphere, Vector3 projectionPoint) {
+        if(Vector3.Angle(pointOnSphere, projectionPoint) < 0.01f) {
+            return Vector3.one * float.MaxValue;
+        }
+        Vector3 dirProjection = (pointOnSphere - projectionPoint).normalized;
+        Vector3 projection = dirProjection * 2f / Vector3.Dot(-projectionPoint, dirProjection); // this is from the projectionPoint
+        return Vector3.ProjectOnPlane(projection, projectionPoint);
+    }
+
+    private float DistToGalaxy(Vector3 dir, Vector3 endASP, Vector3 endBSP, Vector3 projectionPoint) {
+        Vector3 testPoint = StereographicProjection(dir, projectionPoint);
+        Vector3 offset = endBSP - endASP;
+        float sqrGalaxyLength = Vector3.Dot(offset, offset);
+        float t = Mathf.Max(0, Mathf.Min(1, Vector3.Dot(testPoint - endASP, offset) / sqrGalaxyLength));
+        Vector3 projection = endASP + offset * t;
+        Vector3 offsetToSegment = testPoint - projection;
+        return offsetToSegment.magnitude;
+    }
+
     private void SetUpColorBuffer() {
+        if (colorBuffer != null && colorBuffer.count != numberOfStars) {
+            colorBuffer.Release();
+        }
         if (colorBuffer == null) {
-            colorBuffer = new ComputeBuffer(numberOfStars, sizeof(float) * 3);
+            colorBuffer = new ComputeBuffer(numberOfStars, sizeof(float));
         }
 
         colorBuffer.SetData(CreateColors());
     }
 
-    private Vector3[] CreateColors() {
-        Vector3[] colors = new Vector3[numberOfStars];
+    private float[] CreateColors() {
+        float[] colors = new float[numberOfStars];
 
         for (int i = 0; i < numberOfStars; i++) {
-            Color highlightColor = Color.Lerp(highlightColor1, highlightColor2, Random.value);
-            colors[i] = new Vector3(highlightColor.r, highlightColor.g, highlightColor.b);
+            colors[i] = Random.value;
         }
 
         return colors;
     }
 
     private void SetUpScaleBuffer() {
+        if (scaleBuffer != null && scaleBuffer.count != numberOfStars) {
+            scaleBuffer.Release();
+        }
         if (scaleBuffer == null) {
             scaleBuffer = new ComputeBuffer(numberOfStars, sizeof(float));
         }
@@ -155,8 +217,10 @@ public class StarrySky : MonoBehaviour {
 
     private void SetStaticMaterialProperties() {
         mat.SetBuffer("transformations", transformationBuffer);
-        mat.SetBuffer("colors", colorBuffer);
+        mat.SetBuffer("colorParameters", colorBuffer);
         mat.SetBuffer("scales", scaleBuffer);
+        mat.SetVector("highlightColor1", new Vector4(highlightColor1.r, highlightColor1.g, highlightColor1.b));
+        mat.SetVector("highlightColor2", new Vector4(highlightColor2.r, highlightColor2.g, highlightColor2.b));
     }
 
     private void SetUpBounds() {
@@ -211,5 +275,10 @@ public class StarrySky : MonoBehaviour {
         if (argBuffer != null) {
             argBuffer.Release();
         }
+    }
+
+    private void OnValidate() {
+        galaxyEndA = galaxyEndA.normalized;
+        galaxyEndB = galaxyEndB.normalized;
     }
 }
