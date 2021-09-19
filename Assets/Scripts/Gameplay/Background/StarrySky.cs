@@ -77,7 +77,6 @@ public class StarrySky : MonoBehaviour {
 
     private void SetUpMaterial() {
         mat = new Material(Shader.Find("Unlit/StarrySky"));
-        mat.enableInstancing = true;
         SetUpTransformationBuffer();
         SetStaticMaterialProperties();
     }
@@ -94,7 +93,7 @@ public class StarrySky : MonoBehaviour {
         Matrix4x4[] transformations = new Matrix4x4[numStars];
 
         for (int i = 0; i < numStars; i++) {
-            Vector3 positionOffset = Random.insideUnitSphere * (playerCam.farClipPlane - 1f);
+            Vector3 positionOffset = Random.insideUnitSphere.normalized * (playerCam.farClipPlane - 1f);
             Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, positionOffset.normalized);
             Vector3 scale = Vector3.one * Mathf.Tan(Random.Range(sizeRange.x, sizeRange.y) * Mathf.Deg2Rad / 2f) * (playerCam.farClipPlane - 1f);
             transformations[i] = Matrix4x4.TRS(positionOffset, rotation, scale);
@@ -108,21 +107,21 @@ public class StarrySky : MonoBehaviour {
     }
 
     private void SetUpBounds() {
-        starSphereBounds = new Bounds(Vector3.zero, Vector3.one * (playerCam.farClipPlane - 0.99f) * 2f);
+        starSphereBounds = new Bounds(Vector3.zero, Vector3.one * playerCam.farClipPlane);
     }
 
     private void SetUpArgsBuffer() {
         if (argBuffer == null) {
-            argBuffer = new ComputeBuffer(5, sizeof(int));
+            argBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
         }
 
-        argBuffer.SetData(new int[] { (int)starMesh.GetIndexCount(0), numStars, 0, 0, 0 });
+        argBuffer.SetData(new uint[] { starMesh.GetIndexCount(0), (uint)numStars, 0, 0, 0 });
     }
 
     private void Update() {
         UpdateBounds();
         UpdateDynamicMaterialValues();
-        Graphics.DrawMeshInstancedIndirect(starMesh, 0, mat, starSphereBounds, argBuffer);
+        Graphics.DrawMeshInstancedIndirect(starMesh, 0, mat, starSphereBounds, argBuffer, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0);
     }
 
     private void UpdateBounds() {
