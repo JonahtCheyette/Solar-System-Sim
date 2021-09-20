@@ -8,7 +8,7 @@ public static class PlanetRelativeVelocityHUD {
     private static Color regularColor = Color.grey;
     private static float regularAlpha = 0.75f;
     
-    private static Material Mat;
+    private static Material mat;
     private static float displayDistFromSurfaceOfPlanetInPixels = 25f;
     private static float thicknessInPixels = 8f;
     private static int HUDRes = 50;
@@ -75,8 +75,8 @@ public static class PlanetRelativeVelocityHUD {
         if (regularMesh == null) {
             regularMesh = new Mesh();
         }
-        if (Mat == null) {
-            Mat = new Material(Shader.Find("Unlit/PlanetHUD"));
+        if (mat == null) {
+            mat = new Material(Shader.Find("Unlit/PlanetHUD"));
         }
         if (materialProperties == null) {
             materialProperties = new MaterialPropertyBlock();
@@ -270,7 +270,7 @@ public static class PlanetRelativeVelocityHUD {
         HUDColor.a = alpha;
         materialProperties.SetColor("_Color", HUDColor);
 
-        Graphics.DrawMesh(lockedOn ? lockedOnMesh : regularMesh, body.Position, rot, Mat, 0, null, 0, materialProperties, false, false, false);
+        Graphics.DrawMesh(lockedOn ? lockedOnMesh : regularMesh, body.Position, rot, mat, 0, null, 0, materialProperties, false, false, false);
     }
 
     private static void DisplayRelativeForwardVelocity(Vector3 relativeVelocity, CelestialBody body, bool lockedOn, float unitsPerPixel) {
@@ -335,6 +335,10 @@ public static class PlanetRelativeVelocityHUD {
             if (!lockedOnText.enabled) {
                 lockedOnText.enabled = true;
             }
+            float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - body.transform.position).magnitude - body.radius));
+            Color HUDColor = lockedOnColor;
+            HUDColor.a = alpha;
+            lockedOnText.color = HUDColor;
             lockedOnText.text = $"{body.name}\n{relativeForwardVelocity} m/s";
             lockedOnText.rectTransform.anchoredPosition = textPos;
         } else {
@@ -343,7 +347,7 @@ public static class PlanetRelativeVelocityHUD {
             }
             float alpha = Mathf.InverseLerp(fadeOutRange.x, fadeOutRange.y, Mathf.Max(0, (playerCam.transform.position - body.transform.position).magnitude - body.radius));
             alpha *= regularAlpha;
-            Color HUDColor = lockedOn ? lockedOnColor : regularColor;
+            Color HUDColor = regularColor;
             HUDColor.a = alpha;
             regularText.color = HUDColor;
             regularText.text = $"{body.name}\n{relativeForwardVelocity} m/s";

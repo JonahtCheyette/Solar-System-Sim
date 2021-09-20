@@ -16,6 +16,7 @@ public class CelestialBody : MonoBehaviour {
 
     public void Awake() {
         rb = GetComponent<Rigidbody>();
+        mass = (surfaceGravity * radius * radius) / Universe.gravitationalConstant;
         rb.mass = mass;
         velocity = initialVelocity;
         rb.useGravity = false;

@@ -2,7 +2,7 @@
 {
     SubShader
     {
-        Tags {"Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent"}
+        Tags {"IgnoreProjector" = "True" "RenderType" = "Transparent"}
         ZWrite Off
         Blend SrcAlpha OneMinusSrcAlpha
 
@@ -26,9 +26,9 @@
             };
 
             StructuredBuffer<float4x4> transformations;
-            //StructuredBuffer<float3> colors;
             StructuredBuffer<float> colorParameters;
             StructuredBuffer<float> scales;
+            StructuredBuffer<float> brightnesses;
             float4 cameraPos;
             float4 highlightColor1;
             float4 highlightColor2;
@@ -49,7 +49,7 @@
                 float3 centerOfStar = (cameraPos + mul(transformations[i.index], float4(0,0,0,1))).xyz;
                 float dist = length(i.worldPos - centerOfStar) / scales[i.index];
                 float a = 1 - pow(dist, 3);
-                return float4(lerp(float3(1, 1, 1), starCol.xyz, dist), a);
+                return float4(lerp(float3(1, 1, 1), starCol.xyz, dist) * brightnesses[i.index], a);
             }
             ENDCG
         }
