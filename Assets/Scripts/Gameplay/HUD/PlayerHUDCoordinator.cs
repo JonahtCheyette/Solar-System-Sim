@@ -2,6 +2,9 @@
 using UnityEngine;
 
 public class PlayerHUDCoordinator : MonoBehaviour {
+    public float minAngleToBeConsidered = 30f;
+    public float minSensingDistance = 250000f;
+
     private KeyCode clearLockOn = KeyCode.Z;
     private KeyCode lockOnKey = KeyCode.C;
     private ShipController ship;
@@ -41,19 +44,21 @@ public class PlayerHUDCoordinator : MonoBehaviour {
         // else, it looks through all the planets that are less than 30 degrees off the camera's forwards ray,
         // and returns the one with the smallest angle offset that also has unbroken line of sight
         float minAngle = float.MaxValue;
-        float minAngleToBeConsidered = 30f;
-        float minSensingDistance = 250000f;
+        float minAlignment = Mathf.Cos(minAngleToBeConsidered * Mathf.Deg2Rad);
         float minDistance = minSensingDistance;
         int targetedBodyIndex = -2;
 
+        Vector3 camPosition = cam.transform.position;
+        Vector3 camForwards = cam.transform.forward;
+
         for (int i = 0; i < bodies.Length; i++) {
-            Vector3 offsetToPlanet = bodies[i].Position - cam.transform.position;
-            if (Vector3.Dot(offsetToPlanet, cam.transform.forward) >= 0) {
-                Vector3 projection = cam.transform.position + cam.transform.forward * Vector3.Dot(offsetToPlanet, cam.transform.forward);
+            Vector3 offsetToPlanet = bodies[i].Position - camPosition;
+            if (Vector3.Dot(offsetToPlanet, camForwards) >= 0) {
+                Vector3 projection = camPosition + camForwards * Vector3.Dot(offsetToPlanet, camForwards);
                 Vector3 offsetToLine = bodies[i].Position - projection;
                 if (offsetToLine.magnitude < bodies[i].radius) {
                     //the planet is on the camera's forwards ray
-                    float dstToBody = (bodies[i].Position - cam.transform.position).magnitude - bodies[i].radius;
+                    float dstToBody = (bodies[i].Position - camPosition).magnitude - bodies[i].radius;
                     if (dstToBody < minDistance) {
                         minDistance = dstToBody;
                         targetedBodyIndex = i;
@@ -70,24 +75,26 @@ public class PlayerHUDCoordinator : MonoBehaviour {
             // and save the data of the circle it will make on the screen
             List<BodyData> bodiesWithinMinAngle = new List<BodyData>();
             for (int i = 0; i < bodies.Length; i++) {
-                Vector3 offsetToPlanet = bodies[i].Position - cam.transform.position;
+                Vector3 offsetToPlanet = bodies[i].Position - camPosition;
                 float distanceToPlanetSurface = offsetToPlanet.magnitude - bodies[i].radius;
                 if (distanceToPlanetSurface < minSensingDistance) {
-                    float angleToPlanet = Vector3.Angle(cam.transform.forward, offsetToPlanet);
-                    if (angleToPlanet <= minAngleToBeConsidered && !Physics.Raycast(cam.transform.position, offsetToPlanet.normalized, distanceToPlanetSurface - 1f)) {
+                    float alignmentWithCamera = Vector3.Dot(camForwards, offsetToPlanet.normalized);
+                    if (alignmentWithCamera >= minAlignment && !Physics.Raycast(camPosition + camForwards, offsetToPlanet.normalized, distanceToPlanetSurface - 2f)) {
                         Vector2 screenPos = cam.WorldToScreenPoint(bodies[i].Position);
                         float screenRadius = (screenPos - (Vector2)cam.WorldToScreenPoint(bodies[i].Position + cam.transform.up * bodies[i].radius)).magnitude;
-                        bodiesWithinMinAngle.Add(new BodyData(i, angleToPlanet, screenRadius, screenPos));
+                        bodiesWithinMinAngle.Add(new BodyData(i, alignmentWithCamera, screenRadius, screenPos));
                     }
                 }
             }
+
 
             //detecting if there's a line of sight between the body and the camera
             //the way it works is it checks if the body's angle from the camera's forwards angle is smaller than the smallest one recorded so far
             //if so, it gets the circle data saved above and check if any of the other bodies' circle that are within min angle completely cover it up
             //if not, it becomes the new targeted body
+            float maxAlignment = float.MinValue;
             for (int i = 0; i < bodiesWithinMinAngle.Count; i++) {
-                if (bodiesWithinMinAngle[i].angle < minAngle) {
+                if (bodiesWithinMinAngle[i].alignment > maxAlignment) {
                     bool completelyCoveredUp = false;
                     for (int j = 0; j < bodiesWithinMinAngle.Count; j++) {
                         if(i != j && bodiesWithinMinAngle[j].screenRadius > bodiesWithinMinAngle[i].screenRadius) {
@@ -98,12 +105,12 @@ public class PlayerHUDCoordinator : MonoBehaviour {
                         }
                     }
                     if (!completelyCoveredUp) {
-                        minAngle = bodiesWithinMinAngle[i].angle;
+                        maxAlignment = bodiesWithinMinAngle[i].alignment;
                         targetedBodyIndex = bodiesWithinMinAngle[i].index;
                     }
                 }
             }
-            
+
             //limitations of this technique:
             //1. it assumes only one planet might be covering any other given planet. If two planets collectively completely cover up the targeted planet,
             //it will say the planet isn't completely covered up when, in fact, it is
@@ -141,13 +148,13 @@ public class PlayerHUDCoordinator : MonoBehaviour {
 
     private struct BodyData {
         public int index;
-        public float angle;
+        public float alignment;
         public float screenRadius;
         public Vector2 screenPos;
 
-        public BodyData(int bodyIndex, float angleFromCamForwardTobody, float radius, Vector2 positionOnScreen) {
+        public BodyData(int bodyIndex, float alignmentFromCamForwardToBody, float radius, Vector2 positionOnScreen) {
             index = bodyIndex;
-            angle = angleFromCamForwardTobody;
+            alignment = alignmentFromCamForwardToBody;
             screenRadius = radius;
             screenPos = positionOnScreen;
         }

@@ -21,17 +21,6 @@ public class ShipController : MonoBehaviour {
     private Quaternion smoothedRot;
     private Vector3 thrusterInput;
 
-    private KeyCode ascendKey = KeyCode.Space;
-    private KeyCode descendKey = KeyCode.LeftShift;
-    private KeyCode forwardKey = KeyCode.W;
-    private KeyCode backwardKey = KeyCode.S;
-    private KeyCode leftKey = KeyCode.A;
-    private KeyCode rightKey = KeyCode.D;
-    private KeyCode rollCounterKey = KeyCode.Q;
-    private KeyCode rollClockwiseKey = KeyCode.E;
-
-    private KeyCode leaveKey = KeyCode.X;
-
     private ShipPilotInteraction pilotInteraction;
 
     private List<string> collidingWith;
@@ -76,14 +65,14 @@ public class ShipController : MonoBehaviour {
     private void HandleMovement() {
         CursorLock.HandleCursor(lockCursor);
         // Thruster input
-        int thrustInputX = GetInputAxis(leftKey, rightKey);
-        int thrustInputY = GetInputAxis(descendKey, ascendKey);
-        int thrustInputZ = GetInputAxis(backwardKey, forwardKey);
+        int thrustInputX = GetInputAxis(Controls.leftKey, Controls.rightKey);
+        int thrustInputY = GetInputAxis(Controls.descendKey, Controls.ascendKey);
+        int thrustInputZ = GetInputAxis(Controls.backwardKey, Controls.forwardKey);
         thrusterInput = new Vector3(thrustInputX, thrustInputY, thrustInputZ);
 
         // Rotation input
         Vector2 YawPitchInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")).normalized * rotSpeed;
-        float rollInput = GetInputAxis(rollClockwiseKey, rollCounterKey) * rollSpeed * Time.deltaTime;
+        float rollInput = GetInputAxis(Controls.rollClockwiseKey, Controls.rollCounterKey) * rollSpeed * Time.deltaTime;
 
         // Calculate rotation
         if (collidingWith.Count == 0) {
@@ -111,7 +100,7 @@ public class ShipController : MonoBehaviour {
     }
 
     private void CheckIfExiting() {
-        if (Input.GetKeyDown(leaveKey)) {
+        if (Input.GetKeyDown(Controls.leaveKey)) {
             pilotInteraction.StopPiloting();
         }
     }
@@ -131,7 +120,7 @@ public class ShipController : MonoBehaviour {
     }
 
     private void InitializeRigidBody() {
-        //rigidBody.interpolation = RigidbodyInterpolation.Interpolate; this is supposed to fix jitteriness, but for me it caused it instead
+        rigidBody.interpolation = RigidbodyInterpolation.Interpolate; //this is supposed to fix jitteriness, but for me it caused it instead
         rigidBody.useGravity = false;
         rigidBody.isKinematic = false;
         rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;

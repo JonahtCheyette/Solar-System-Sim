@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class ShipDoorController : MonoBehaviour {
     public float minInteractionDist = 10f;
-
-    private KeyCode doorKey = KeyCode.C;
+    
     private bool open;
     private BoxCollider doorCollider;
     private BoxCollider rampCollider;
@@ -61,7 +60,7 @@ public class ShipDoorController : MonoBehaviour {
         openLastFrame = open;
 
         Vector3 interactionPosition = transform.TransformPoint(doorCollider.center - Vector3.up * doorCollider.size.y / 2f);
-        InteractionHandler.AddInteractionIfInRange(ChangeDoorState, open ? "Close Ship Door" : "Open Ship Door", doorKey, interactionPosition, minInteractionDist);
+        InteractionHandler.AddInteractionIfInRange(ChangeDoorState, open ? "Close Ship Door" : "Open Ship Door", Controls.doorKey, interactionPosition, minInteractionDist);
     }
 
     public bool isOpen {

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class FlashLightController : MonoBehaviour {
     private Light flashLight;
-    private KeyCode flashLightKey = KeyCode.F;
 
     // Start is called before the first frame update
     private void Start() {
@@ -14,7 +13,7 @@ public class FlashLightController : MonoBehaviour {
 
     // Update is called once per frame
     private void Update() {
-        if (Input.GetKeyDown(flashLightKey)) {
+        if (Input.GetKeyDown(Controls.flashlightKey)) {
             flashLight.enabled = !flashLight.enabled;
         }
         if (flashLight.enabled) {

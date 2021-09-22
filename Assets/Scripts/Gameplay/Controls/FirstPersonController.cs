@@ -96,7 +96,7 @@ public class FirstPersonController : MonoBehaviour {
     }
 
     private void Jump() {
-        if (Input.GetKeyDown(KeyCode.Space) && grounded) {
+        if (Input.GetKeyDown(Controls.jumpKey) && grounded) {
             rigidBody.AddForce(transform.up * jumpForce);
         }
     }

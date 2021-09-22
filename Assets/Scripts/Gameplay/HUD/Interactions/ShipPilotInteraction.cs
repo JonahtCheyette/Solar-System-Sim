@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class ShipPilotInteraction : MonoBehaviour {
 
-    private KeyCode interactionKey = KeyCode.X;
-
     //interaction functionality
     public float minInteractionDist = 5f;
     private GameObject player;
@@ -52,7 +50,7 @@ public class ShipPilotInteraction : MonoBehaviour {
         if (!doingAnimation) {
             Vector3 interactionPosition = transform.TransformPoint(chairPosition);
             if (player.activeInHierarchy) {
-                InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", interactionKey, interactionPosition, minInteractionDist);
+                InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", Controls.startPilotingShipKey, interactionPosition, minInteractionDist);
             }
         } else {
             animationStep++;
