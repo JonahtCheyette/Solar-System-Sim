@@ -46,7 +46,9 @@ public class ShipController : MonoBehaviour {
     void Update() {
         if (piloted) {
             HandleMovement();
-            CheckIfExiting();
+            if (ShouldBeAbleToExit()) {
+                CheckIfExiting();
+            }
         }
     }
 
@@ -99,6 +101,10 @@ public class ShipController : MonoBehaviour {
         return axis;
     }
 
+    private bool ShouldBeAbleToExit() {
+        return collidingWith.Count > 0;
+    }
+
     private void CheckIfExiting() {
         if (Input.GetKeyDown(Controls.leaveKey)) {
             pilotInteraction.StopPiloting();
@@ -120,7 +126,7 @@ public class ShipController : MonoBehaviour {
     }
 
     private void InitializeRigidBody() {
-        rigidBody.interpolation = RigidbodyInterpolation.Interpolate; //this is supposed to fix jitteriness, but for me it caused it instead
+        rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
         rigidBody.useGravity = false;
         rigidBody.isKinematic = false;
         rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;

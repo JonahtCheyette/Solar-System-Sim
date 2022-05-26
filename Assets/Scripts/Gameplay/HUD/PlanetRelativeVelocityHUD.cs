@@ -22,6 +22,7 @@ public static class PlanetRelativeVelocityHUD {
     private static Text lockedOnText;
     private static Text regularText;
     private static Image arrowToLockOnPlanet;
+    private static CanvasSizeGetter canvasSizeGetter;
 
     private static MaterialPropertyBlock materialProperties;
 
@@ -30,7 +31,7 @@ public static class PlanetRelativeVelocityHUD {
     private static float arrowheadThicknessInPixels = 12;
     private static float maxArrowLengthInPixels = 200f;
 
-    private static float textDistanceFromRing = 65f;
+    private static float textDistanceFromRing = 60f;
     private static float arrowTextToleranceAngle = 20f;
     private static float textArrowLengthTolerance = 25f;
 
@@ -39,7 +40,7 @@ public static class PlanetRelativeVelocityHUD {
         Initialize();
         if (lockedOn && !body.gameObject.GetComponent<MeshRenderer>().isVisible) {
             DrawArrowToPlanet(body);
-            HideText(true);
+            HideRelevantText(true);
         } else {
             if ((playerCam.transform.position - body.transform.position).magnitude - body.radius >= fadeOutRange.x) {
                 //if we're close enough to the planet that the mesh is even gonna be drawn, otherwise why bother
@@ -66,6 +67,7 @@ public static class PlanetRelativeVelocityHUD {
         InitializeMeshNecessities();
         InitializeTextBoxes();
         InitializeArrowToPlanet();
+        InitializeCanvasSizeGetter();
     }
 
     private static void InitializeMeshNecessities() {
@@ -117,6 +119,12 @@ public static class PlanetRelativeVelocityHUD {
             regularText.rectTransform.pivot = Vector2.one * 0.5f;
             regularText.rectTransform.anchorMin = Vector2.zero;
             regularText.rectTransform.anchorMax = Vector2.zero;
+        }
+    }
+
+    private static void InitializeCanvasSizeGetter(){
+        if(canvasSizeGetter == null) {
+            canvasSizeGetter = Object.FindObjectOfType<CanvasSizeGetter>();
         }
     }
 
@@ -284,7 +292,11 @@ public static class PlanetRelativeVelocityHUD {
         //otherwise, find the direction the arrow is pointing in screen space
         //if the direction is too far up, draw the text below the planet
         //otherwise or if the arrowhead is within the ring, put the text above the planet
-        float outerRadius = body.radius + ((thicknessInPixels + displayDistFromSurfaceOfPlanetInPixels) * unitsPerPixel);
+        float ringDistFromSurfaceOfPlanetInPixels = displayDistFromSurfaceOfPlanetInPixels;
+        if (lockedOn) {
+            ringDistFromSurfaceOfPlanetInPixels /= 2;
+        }
+        float outerRadius = body.radius + (thicknessInPixels + ringDistFromSurfaceOfPlanetInPixels) * unitsPerPixel; //this is in units
 
         //finding the tip of the arrow
         Vector3[] verts = (lockedOn ? lockedOnMesh : regularMesh).vertices;
@@ -296,34 +308,24 @@ public static class PlanetRelativeVelocityHUD {
             }
         }
 
-        Vector2 textPos = GetTextPos(angle, maxDistance, outerRadius, body);
+        Vector2 textPos = GetTextPos(angle, maxDistance, outerRadius, unitsPerPixel, body);
         DrawRelativeVelocityText(lockedOn, relativeForwardVelocity, textPos, body);
     }
 
-    private static Vector2 GetTextPos(float angle, float maxDistance, float outerRadius, CelestialBody body) {
-        Vector2 textPos;
-
-        Vector3 offsetToPlanet = body.Position - playerCam.transform.position;
-        //this is the point on a certain plane that the camera is looking at
-        //the plane in this case is defined by the body's position and a normal pointing from the body to the camera
-        Vector3 pointOnBodyPlaneCameraIsLookingAt = (offsetToPlanet.magnitude/Vector3.Dot(offsetToPlanet.normalized, playerCam.transform.forward)) * playerCam.transform.forward + playerCam.transform.position;
-        
-        //this plane normal is perpendicular to both the offset from the camera to the planet and the camera's up direction
-        Vector3 planeNormal = Vector3.Cross(offsetToPlanet, playerCam.transform.up).normalized;
-        Vector3 flattened = Vector3.ProjectOnPlane(body.Position - pointOnBodyPlaneCameraIsLookingAt, planeNormal).normalized * outerRadius;
-        flattened *= Mathf.Sign(Vector3.Dot(flattened, playerCam.transform.up));
-
-        if (Mathf.Abs(angle - 90) < arrowTextToleranceAngle && maxDistance > outerRadius + textArrowLengthTolerance) {
-            //draw the text below the planet
-            textPos = playerCam.WorldToScreenPoint(body.Position - flattened);
-            textPos.y *= 900f / Screen.height;
-            textPos.x *= 1600f / Screen.width;
+    private static Vector2 GetTextPos(float angleOfArrow, float maxDistance, float outerRadius, float unitsPerPixel, CelestialBody body) {
+        Vector2 canvasSize = canvasSizeGetter.getSize();
+        Vector3 offsetToBody = body.Position - playerCam.transform.position;
+        Vector3 correctDir = Vector3.Cross(Vector3.Cross(offsetToBody, playerCam.transform.up), offsetToBody).normalized;
+        Vector2 textPos = playerCam.WorldToViewportPoint(body.Position);
+        if (Mathf.Abs(angleOfArrow - 90) < arrowTextToleranceAngle && maxDistance > outerRadius + textArrowLengthTolerance) {
+            textPos.y = playerCam.WorldToViewportPoint(body.Position - correctDir * outerRadius).y;
+            textPos.y *= canvasSize.y;
+            textPos.x *= canvasSize.x;
             textPos.y -= textDistanceFromRing;
         } else {
-            //draw the text above the planet
-            textPos = playerCam.WorldToScreenPoint(body.Position + flattened);
-            textPos.y *= 900f / Screen.height;
-            textPos.x *= 1600f / Screen.width;
+            textPos.y = playerCam.WorldToViewportPoint(body.Position + correctDir * outerRadius).y;
+            textPos.y *= canvasSize.y;
+            textPos.x *= canvasSize.x;
             textPos.y += textDistanceFromRing;
         }
 
@@ -355,12 +357,17 @@ public static class PlanetRelativeVelocityHUD {
         }
     }
 
-    public static void HideText(bool lockedOn) {
+    public static void HideRelevantText(bool lockedOn) {
         if (lockedOn) {
             lockedOnText.enabled = false;
         } else {
             regularText.enabled = false;
         }
+    }
+
+    public static void HideText() {
+        lockedOnText.enabled = false;
+        regularText.enabled = false;
     }
 
     private static void DrawArrowToPlanet(CelestialBody body) {

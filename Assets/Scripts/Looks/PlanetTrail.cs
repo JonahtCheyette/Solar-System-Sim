@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//VERY IMPORTANT: THIS CODE DOESN'T CURRENTLY WORK, IF YOU WANT TO SEE WHY CHECK THE UpdateTrails FUNCTION
+
 [ImageEffectAllowedInSceneView] [ExecuteAlways] // have to use ExecuteAlways, otherwise I get a warning when coming back from play mode
 public class PlanetTrail : MonoBehaviour {
     private CelestialBody[] bodies;

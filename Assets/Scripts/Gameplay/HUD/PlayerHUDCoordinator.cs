@@ -34,6 +34,8 @@ public class PlayerHUDCoordinator : MonoBehaviour {
             int lookedAtBodyIndex = GetIndexOfPlanetCameraIsLookingAt(cam);
             DrawPlanetHUD(lookedAtBodyIndex);
             CheckIfClearingLockOn();
+        } else {
+            PlanetRelativeVelocityHUD.HideText();
         }
     }
 
@@ -43,7 +45,6 @@ public class PlayerHUDCoordinator : MonoBehaviour {
         // if there are planets directly along the camera's forwards ray, it returns the closest one
         // else, it looks through all the planets that are less than 30 degrees off the camera's forwards ray,
         // and returns the one with the smallest angle offset that also has unbroken line of sight
-        float minAngle = float.MaxValue;
         float minAlignment = Mathf.Cos(minAngleToBeConsidered * Mathf.Deg2Rad);
         float minDistance = minSensingDistance;
         int targetedBodyIndex = -2;
@@ -71,7 +72,7 @@ public class PlayerHUDCoordinator : MonoBehaviour {
         // that has a clear line of sight from the camera to the body
         // and use that instead
         if (targetedBodyIndex == -2) {
-            // getting all the bodies within minAngle of the camera's forwards ray
+            // getting all the bodies within minAngleToBeConsidered of the camera's forwards ray
             // and save the data of the circle it will make on the screen
             List<BodyData> bodiesWithinMinAngle = new List<BodyData>();
             for (int i = 0; i < bodies.Length; i++) {
@@ -91,7 +92,7 @@ public class PlayerHUDCoordinator : MonoBehaviour {
             //detecting if there's a line of sight between the body and the camera
             //the way it works is it checks if the body's angle from the camera's forwards angle is smaller than the smallest one recorded so far
             //if so, it gets the circle data saved above and check if any of the other bodies' circle that are within min angle completely cover it up
-            //if not, it becomes the new targeted body
+            //if it isn't completely covered up, it becomes the new targeted body
             float maxAlignment = float.MinValue;
             for (int i = 0; i < bodiesWithinMinAngle.Count; i++) {
                 if (bodiesWithinMinAngle[i].alignment > maxAlignment) {
@@ -129,14 +130,14 @@ public class PlayerHUDCoordinator : MonoBehaviour {
                 lockedOnBodyIndex = targetBodyIndex;
             }
         } else {
-            PlanetRelativeVelocityHUD.HideText(false);
+            PlanetRelativeVelocityHUD.HideRelevantText(false);
         }
 
         if (lockedOnBodyIndex != -1) {
             //the planet is locked on to a planet
             PlanetRelativeVelocityHUD.DrawPlanetHUD(bodies[lockedOnBodyIndex], ship.RigidBody.velocity, true);
         } else {
-            PlanetRelativeVelocityHUD.HideText(true);
+            PlanetRelativeVelocityHUD.HideRelevantText(true);
         }
     }
 
