@@ -17,9 +17,9 @@ MonoBehaviour:
   meshHandler: {fileID: 0}
   seed: 1
   oceanShallowColor: {r: 0, g: 1, b: 0.97254896, a: 0}
-  oceanDeepColor: {r: 0, g: 0.094518185, b: 1, a: 0}
-  oceanBlendMultiplier: 32.08
-  oceanAlphaMultiplier: 1000
+  oceanDeepColor: {r: 0, g: 0.09411764, b: 1, a: 0}
+  oceanBlendMultiplier: 8.79
+  oceanAlphaMultiplier: 664.4
   oceanFloorDepth: 0.84
   oceanDamper: 0.651
   oceanSmoothing: 0.199

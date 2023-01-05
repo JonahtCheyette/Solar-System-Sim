@@ -117,10 +117,10 @@ Shader "Hidden/OceanShader" {
                         waveNormal = normalize(lerp(baseNormal, waveNormal, waveStrength));
                         
                         float3 c = waveNormal * dot(waveNormal, toLight);
-                        float specularHighlight = max(pow(dot(2*c-toLight, -viewDir), smoothness),0);
+                        float specularHighlight = pow(max(dot(2*c-toLight, -viewDir), 0), smoothness);
 
                         float dstAboveWater = length(clipPlanePos - positions[i]) - oceans[i].size;
-                        specularHighlight *= (dstAboveWater > 0);
+                        specularHighlight *= (intersectionInfo.x > 0);
                         light += specularHighlight;
 
                         light = max(light, ambientLight);

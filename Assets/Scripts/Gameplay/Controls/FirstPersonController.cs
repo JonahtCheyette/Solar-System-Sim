@@ -104,7 +104,7 @@ public class FirstPersonController : MonoBehaviour {
     private void FindStartingPosition() {
         CelestialBodyPhysics startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
         Vector3 dirFromPlanetToPlayer = (transform.position - startingPlanet.Position).normalized;
-        rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (1.3f * startingPlanet.Radius());
+        rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (1.1f * startingPlanet.Radius());
         rigidBody.velocity = startingPlanet.initialVelocity;
 
         Vector3 targetDirection = (startingPlanet.transform.position - transform.position).normalized;

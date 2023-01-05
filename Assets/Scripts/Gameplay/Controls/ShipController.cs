@@ -137,7 +137,7 @@ public class ShipController : MonoBehaviour {
         Vector3 dirFromPlanetToShip = (transform.position - startingPlanet.Position).normalized;
         Vector3 targetDirection = -dirFromPlanetToShip;
 
-        rigidBody.position = startingPlanet.Position + dirFromPlanetToShip * (1.4f * startingPlanet.Radius());
+        rigidBody.position = startingPlanet.Position + dirFromPlanetToShip * (1.1f * startingPlanet.Radius());
         transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
         rigidBody.velocity = startingPlanet.initialVelocity;
     }
