@@ -5,10 +5,10 @@ using UnityEngine;
 //meant to do all the gravity calculations for everything
 //should be attatched to a single empty gameobject
 public class GravityHandler : MonoBehaviour {
-    private static CelestialBody[] bodies;
+    private static CelestialBodyPhysics[] bodies;
 
     private void Awake() {
-        bodies = FindObjectsOfType<CelestialBody>();
+        bodies = FindObjectsOfType<CelestialBodyPhysics>();
         Time.fixedDeltaTime = Universe.physicsTimeStep;
     }
 
@@ -24,10 +24,10 @@ public class GravityHandler : MonoBehaviour {
         }
     }
 
-    private Vector3 CalculateAccelerationForPlanets(Vector3 position, CelestialBody ignoreBody) {
+    private Vector3 CalculateAccelerationForPlanets(Vector3 position, CelestialBodyPhysics ignoreBody) {
         //ignore body is there because we don't want any objects to attract themselves
         Vector3 acceleration = Vector3.zero;
-        foreach (CelestialBody body in bodies) {
+        foreach (CelestialBodyPhysics body in bodies) {
             if (body != ignoreBody) {
                 float sqrDst = (body.Position - position).sqrMagnitude;
                 Vector3 forceDir = (body.Position - position).normalized;
@@ -49,9 +49,9 @@ public class GravityHandler : MonoBehaviour {
         return acceleration;
     }
 
-    public static CelestialBody GetClosestPlanet(Vector3 position) {
+    public static CelestialBodyPhysics GetClosestPlanet(Vector3 position) {
         float minDistance = float.MaxValue;
-        CelestialBody closestBody = bodies[0];
+        CelestialBodyPhysics closestBody = bodies[0];
         foreach (var body in bodies) {
             float dist = (body.Position - position).magnitude;
             if(minDistance > dist) {

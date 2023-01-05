@@ -1,0 +1,26 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel ProjectOntoSphere
+#pragma kernel FlipTriangles
+
+RWStructuredBuffer<float3> points;
+float radius;
+
+[numthreads(32,1,1)]
+void ProjectOntoSphere(uint3 id : SV_DispatchThreadID) {
+    points[id.x] = points[id.x] / sqrt(points[id.x].x * points[id.x].x + points[id.x].y * points[id.x].y + points[id.x].z * points[id.x].z) * radius;
+}
+
+RWStructuredBuffer<int3> tris;
+
+[numthreads(32, 1, 1)]
+void FlipTriangles(uint3 id : SV_DispatchThreadID) {
+    float3 centerToTriangle = points[tris[id.x].x];
+    float3 AB = points[tris[id.x].y] - centerToTriangle;
+    float3 CB = points[tris[id.x].y] - points[tris[id.x].z];
+    float3 triNormal = -cross(AB, CB);
+    if (dot(triNormal, centerToTriangle) < 0) {
+        int hold = tris[id.x].x;
+        tris[id.x].x = tris[id.x].y;
+        tris[id.x].y = hold;
+    }
+}

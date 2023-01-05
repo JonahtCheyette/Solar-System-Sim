@@ -1,0 +1,68 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#include "..\..\Includes\NoiseFunctions.compute"
+#pragma kernel Generate
+
+float smin(float a, float b, float k) {
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0, 1);
+    return lerp(b, a, h) - k * h * (1 - h);
+}
+
+float smax(float a, float b, float k) {
+    return smin(a, b, -k);
+}
+
+RWStructuredBuffer<float3> points;
+
+float3 genShapeNoiseSettings;
+float genShapeMultiplier;
+StructuredBuffer<float3> genShapeOctaveOffsets;
+
+float3 detailNoiseSettings;
+float detailMultiplier;
+StructuredBuffer<float3> detailOctaveOffsets;
+
+float3 ridgeNoiseSettings;
+float ridgeMultiplier;
+StructuredBuffer<float3> ridgeOctaveOffsets;
+float ridgeGain;
+float ridgeSharpness;
+
+struct Crater {
+    float radius;
+    float rimSteepness;
+    float floorHeight;
+    float rimWidth;
+    float3 center;
+};
+
+uint numCraters;
+float craterSmoothing;
+StructuredBuffer<Crater> craters;
+
+float baseRadius;
+float craterMultiplier;
+
+[numthreads(32, 1, 1)]
+void Generate(uint3 id : SV_DispatchThreadID) {
+
+    points[id.x] = normalize(points[id.x]);
+    float radius = baseRadius;
+    for (uint i = 0; i < numCraters; i++) {
+        float scaledDist = acos(dot(points[id.x], craters[i].center)) / craters[i].radius;
+
+        float cavity = scaledDist * scaledDist - 1;
+        float rimX = min(0, scaledDist - 1 - craters[i].rimWidth);
+        float rim = craters[i].rimSteepness * rimX * rimX;
+
+        float craterShape = smax(cavity, craters[i].floorHeight, craterSmoothing);
+        craterShape = smin(craterShape, rim, craterSmoothing);
+
+        radius += craterShape * craters[i].radius * craterMultiplier;
+    }
+
+    radius += layeredNoise(points[id.x], genShapeOctaveOffsets, genShapeNoiseSettings) * genShapeMultiplier;
+    radius += layeredNoise(points[id.x], detailOctaveOffsets, detailNoiseSettings) * detailMultiplier;
+    radius += smoothedRidgeNoise(points[id.x], ridgeOctaveOffsets, ridgeGain, ridgeSharpness, ridgeNoiseSettings) * ridgeMultiplier;
+
+    points[id.x] *= radius;
+}

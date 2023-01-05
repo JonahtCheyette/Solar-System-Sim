@@ -126,18 +126,18 @@ public class ShipController : MonoBehaviour {
     }
 
     private void InitializeRigidBody() {
-        rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
+        rigidBody.interpolation = RigidbodyInterpolation.None;
         rigidBody.useGravity = false;
         rigidBody.isKinematic = false;
-        rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+        rigidBody.collisionDetectionMode = CollisionDetectionMode.Discrete;
     }
 
     private void FindStartingPosition() {
-        CelestialBody startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
+        CelestialBodyPhysics startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
         Vector3 dirFromPlanetToShip = (transform.position - startingPlanet.Position).normalized;
         Vector3 targetDirection = -dirFromPlanetToShip;
 
-        rigidBody.position = startingPlanet.Position + dirFromPlanetToShip * (0.1f + startingPlanet.radius);
+        rigidBody.position = startingPlanet.Position + dirFromPlanetToShip * (1.4f * startingPlanet.Radius());
         transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
         rigidBody.velocity = startingPlanet.initialVelocity;
     }

@@ -1,0 +1,24 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Generate
+
+RWStructuredBuffer<float3> points;
+const static float maxStrength = 0.0057f;
+float seed;
+
+float rand(float2 uv) {
+	float result = frac(sin(seed / 100.0f * dot(uv, float2(12.9898f, 78.233f))) * 43758.5453f);
+	seed += 1.0f;
+	return result;
+}
+
+[numthreads(32,1,1)]
+void Generate(uint3 id : SV_DispatchThreadID) {
+	float height = length(points[id.x]);
+	float3 pos = normalize(points[id.x]);
+
+	float3 offset = float3(rand(pos.xy), rand(pos.yz), rand(pos.xz));
+	offset = smoothstep(-1, 1, offset) * 2 - 1;
+	float3 newPos = pos + offset * maxStrength;
+
+	points[id.x] = normalize(newPos) * height;
+}

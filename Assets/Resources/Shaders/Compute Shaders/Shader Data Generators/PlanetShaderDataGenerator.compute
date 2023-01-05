@@ -1,0 +1,19 @@
+#include "..\..\Includes\NoiseFunctions.compute"
+#include "..\..\Includes\ShaderDataGeneratorBasics.compute"
+#pragma kernel GenerateWithTangents
+#pragma kernel GenerateWithoutTangents
+
+[numthreads(32, 1, 1)]
+void GenerateWithTangents(uint3 id : SV_DispatchThreadID) {
+	//output: first value is noise value, last 4 are tangent values
+	int baseIndex = id.x * 4;
+	float3 t = normalize(cross(normals[id.x], normals[id.x] == float3(0, -1, 0) || normals[id.x] == float3(0, 1, 0) ? float3(0, 0, -1) : float3(0, -1, 0)));
+	output[baseIndex] = t.x;
+	output[baseIndex + 1] = t.y;
+	output[baseIndex + 2] = t.z;
+	output[baseIndex + 3] = 1;
+}
+
+[numthreads(32, 1, 1)]
+void GenerateWithoutTangents(uint3 id : SV_DispatchThreadID) {
+}

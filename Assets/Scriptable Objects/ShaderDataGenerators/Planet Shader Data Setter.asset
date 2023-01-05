@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bacf319dfb038eb449188b1c3c072005, type: 3}
+  m_Name: Planet Shader Data Setter
+  m_EditorClassIdentifier: 
+  autoUpdate: 1
+  meshHandler: {fileID: 0}
+  usePoleShading: 0
+  poleColor: {r: 0, g: 0, b: 0, a: 0}
+  minPoleAlignment: 0.82
+  poleBlend: 0.07
+  layers:
+  - baseRadius: -1
+    blendAmount: 0
+    albedo: {r: 0.26415092, g: 0.26415092, b: 0.26415092, a: 0}
+    useNormalColoration: 0
+    minAlignment: 0
+    normalBlendAmount: 0
+    normalAlbedo: {r: 0, g: 0, b: 0, a: 0}
+  - baseRadius: -0.39
+    blendAmount: 0.54
+    albedo: {r: 0.3773585, g: 0.30811203, b: 0.040583815, a: 0}
+    useNormalColoration: 0
+    minAlignment: 0.565
+    normalBlendAmount: 0.183
+    normalAlbedo: {r: 0, g: 0, b: 0, a: 0}
+  - baseRadius: 0
+    blendAmount: 0.028
+    albedo: {r: 0.9879407, g: 1, b: 0.50377357, a: 0}
+    useNormalColoration: 0
+    minAlignment: 0.565
+    normalBlendAmount: 0.183
+    normalAlbedo: {r: 0, g: 0, b: 0, a: 0}
+  - baseRadius: 0.02
+    blendAmount: 0.027
+    albedo: {r: 0, g: 0.764151, b: 0.15100709, a: 0}
+    useNormalColoration: 1
+    minAlignment: 0.732
+    normalBlendAmount: 0.046
+    normalAlbedo: {r: 0.4156863, g: 0.24313727, b: 0, a: 0}
+  - baseRadius: 0.07
+    blendAmount: 0.155
+    albedo: {r: 0.052608527, g: 0.5754717, b: 0.045603376, a: 0}
+    useNormalColoration: 1
+    minAlignment: 0.645
+    normalBlendAmount: 0.046
+    normalAlbedo: {r: 0.41509432, g: 0.24213834, b: 0, a: 0}
+  - baseRadius: 0.38
+    blendAmount: 0.051
+    albedo: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 0}
+    useNormalColoration: 1
+    minAlignment: 0.636
+    normalBlendAmount: 0.055
+    normalAlbedo: {r: 0.254717, g: 0.254717, b: 0.254717, a: 0}
+  - baseRadius: 0.71
+    blendAmount: 0.302
+    albedo: {r: 1, g: 1, b: 1, a: 0}
+    useNormalColoration: 0
+    minAlignment: 0.565
+    normalBlendAmount: 0.183
+    normalAlbedo: {r: 0, g: 0, b: 0, a: 0}

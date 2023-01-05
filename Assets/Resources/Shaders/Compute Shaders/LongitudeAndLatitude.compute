@@ -1,0 +1,62 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GeneratePoints
+#pragma kernel GenerateTris
+
+RWStructuredBuffer<float3> points;
+float latitudeAngle;
+float longitudeAngle;
+float radius;
+uint longitudeLines;
+uint latitudeLines;
+
+[numthreads(4, 8, 1)]
+void GeneratePoints(uint3 id : SV_DispatchThreadID) {
+	if (id.x < latitudeLines && id.y < longitudeLines) {
+		float yPos = cos(latitudeAngle * (id.x + 1));
+		float xPos = cos(longitudeAngle * id.y) * sin(latitudeAngle * (id.x + 1));
+		float zPos = sin(longitudeAngle * id.y) * sin(latitudeAngle * (id.x + 1));
+		points[id.y + id.x * longitudeLines] = float3(xPos, yPos, zPos) * radius;
+	}
+}
+
+RWStructuredBuffer<int3> tris;
+
+[numthreads(32, 1, 1)]
+void GenerateTris(uint3 id : SV_DispatchThreadID) {
+	if (id.x < longitudeLines) { // top triangles
+		tris[id.x].x = 0;
+		if (id.x != longitudeLines - 1) {
+			tris[id.x].y = id.x + 2;
+		} else {
+			tris[id.x].y = 1;
+		}
+		tris[id.x].z = id.x + 1;
+	} else if (id.x > (latitudeLines - 1) * (2 * longitudeLines) + longitudeLines - 1) { // bottom triangles
+		tris[id.x].x = latitudeLines * longitudeLines + 1;
+		tris[id.x].y = latitudeLines * longitudeLines + 1 - (id.x % longitudeLines + 1);
+		if (id.x % longitudeLines != 0) {
+			tris[id.x].z = latitudeLines * longitudeLines + 1 - (id.x % longitudeLines);
+		} else {
+			tris[id.x].z = latitudeLines * longitudeLines + 1 - longitudeLines;
+		}
+	} else {
+		//the middle trianlges make up rows of boxes that connect the vertices that aren't the north or south pole to each other
+		if ((id.x - longitudeLines) % 2 == 0) { //left triangle of box
+			tris[id.x].x = (id.x - longitudeLines) / 2 + 1;
+			tris[id.x].z = tris[id.x].x + longitudeLines;
+			if (tris[id.x].x % longitudeLines == 0) { // end of the row
+				tris[id.x].y = tris[id.x].z - (longitudeLines - 1);
+			} else {
+				tris[id.x].y = tris[id.x].z + 1;
+			}
+		} else { //right triangle of box
+			tris[id.x].x = (id.x - longitudeLines - 1) / 2 + 1;
+			if (tris[id.x].x % longitudeLines == 0) { // end of the row
+				tris[id.x].y = tris[id.x].x - (longitudeLines - 1);
+			} else {
+				tris[id.x].y = tris[id.x].x + 1;
+			}
+			tris[id.x].z = tris[id.x].y + longitudeLines;
+		}
+	}
+}

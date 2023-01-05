@@ -6,7 +6,7 @@ using UnityEngine;
 
 [ImageEffectAllowedInSceneView] [ExecuteAlways] // have to use ExecuteAlways, otherwise I get a warning when coming back from play mode
 public class PlanetTrail : MonoBehaviour {
-    private CelestialBody[] bodies;
+    private CelestialBodyPhysics[] bodies;
 
     private List<TrailSegment> fullSegmentList; // the full list of positions all the planets have been in
     private List<PlanetPos> fullPlanetList;
@@ -38,7 +38,7 @@ public class PlanetTrail : MonoBehaviour {
     public float haloRadiusMultiplier = 2;
 
     private void Start() {
-        bodies = FindObjectsOfType<CelestialBody>();
+        bodies = FindObjectsOfType<CelestialBodyPhysics>();
 
         fullSegmentList = new List<TrailSegment>();
         fullPlanetList = new List<PlanetPos>();
@@ -46,7 +46,7 @@ public class PlanetTrail : MonoBehaviour {
         planetsToBeSentToShader = new List<PlanetData>();
 
         planetColors = new List<Vector3>();
-        foreach (CelestialBody body in bodies) { // getting the planet color data
+        foreach (CelestialBodyPhysics body in bodies) { // getting the planet color data
             planetColors.Add(new Vector3(body.color.r, body.color.g, body.color.b));
         }
 
@@ -94,7 +94,7 @@ public class PlanetTrail : MonoBehaviour {
     private void UpdatePlanetList(int bodyIndex) {
         //getting the position and radius of the planet in viewportSpace
         Vector3 viewportPosition = cam.WorldToViewportPoint(bodies[bodyIndex].Position);
-        float radius = cam.WorldToViewportPoint(bodies[bodyIndex].Position + cam.transform.up * bodies[bodyIndex].radius).y - viewportPosition.y;
+        float radius = cam.WorldToViewportPoint(bodies[bodyIndex].Position + cam.transform.up * bodies[bodyIndex].Radius()).y - viewportPosition.y;
 
         PlanetPos currentPlanet = new PlanetPos(viewportPosition, bodyIndex, radius);
         if (currentPlanet.OnScreen(aspectRatio, haloRadiusMultiplier)) {

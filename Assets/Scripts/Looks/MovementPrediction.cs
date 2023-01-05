@@ -8,7 +8,7 @@ public class MovementPrediction : MonoBehaviour {
     public int numSteps;
     public bool autoUpdate;
     public bool isRelative;
-    public CelestialBody relativeTo;
+    public CelestialBodyPhysics relativeTo;
     public bool useDefaultTimeStep;
     public float customTimeStep;
 
@@ -35,7 +35,7 @@ public class MovementPrediction : MonoBehaviour {
     }
 
     void Initialize() {
-        CelestialBody[] tempBodies = FindObjectsOfType<CelestialBody>();
+        CelestialBodyPhysics[] tempBodies = FindObjectsOfType<CelestialBodyPhysics>();
         bodies = new CelestialBodyData[tempBodies.Length];
         float timeStep = useDefaultTimeStep ? Universe.physicsTimeStep : customTimeStep;
         for (int i = 0; i < tempBodies.Length; i++) {
@@ -113,9 +113,9 @@ public class MovementPrediction : MonoBehaviour {
         private Vector3 velocity;
         private float timeStep;
 
-        public CelestialBodyData(CelestialBody cb, float physTimeStep) {
+        public CelestialBodyData(CelestialBodyPhysics cb, float physTimeStep) {
             mass = cb.mass;
-            radius = cb.radius;
+            radius = cb.Radius();
             position = cb.Position;
             velocity = cb.initialVelocity;
             timeStep = physTimeStep;

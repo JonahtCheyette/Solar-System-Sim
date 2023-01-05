@@ -1,0 +1,54 @@
+#include "..\..\Includes\NoiseFunctions.compute"
+#pragma kernel Generate
+
+float smin(float a, float b, float k) {
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0, 1);
+    return lerp(b, a, h) - k * h * (1 - h);
+}
+
+float smax(float a, float b, float k) {
+    return smin(a, b, -k);
+}
+
+float baseRadius;
+
+RWStructuredBuffer<float3> points;
+
+float3 genShapeNoiseSettings;
+float genShapeMultiplier;
+StructuredBuffer<float3> genShapeOctaveOffsets;
+
+float3 ridgeNoiseSettings;
+float ridgeMultiplier;
+StructuredBuffer<float3> ridgeOctaveOffsets;
+float ridgeGain;
+float ridgeSharpness;
+
+float oceanDamper;
+float oceanFloorDepth;
+float oceanSmoothing;
+float oceanDepthMultiplier;
+
+StructuredBuffer<float3> mountainMaskOffset;
+float3 mountainMaskSettings;
+float mountainMaskShift;
+
+[numthreads(32,1,1)]
+void Generate(uint3 id : SV_DispatchThreadID) {
+    points[id.x] = normalize(points[id.x]);
+    //basic general shape noise, note that it is unscaled
+    float continentNoise = layeredNoise(points[id.x], genShapeOctaveOffsets, genShapeNoiseSettings);
+
+    //adding oceans the way this works is by scaling down the continent noise, subtracting a certain amount from it, and then using smooth max to get the oceans
+    //works because ocean floor will be greater than continent noise in spots where continent noise is highly negative
+    float oceanFloor = continentNoise * oceanDamper - oceanFloorDepth;
+    continentNoise = smax(continentNoise, oceanFloor, oceanSmoothing);
+    continentNoise *= continentNoise < 0 ? oceanDepthMultiplier : 1;
+
+    //scale up the continent noise, calculate the mountains, then add everything together
+    continentNoise *= genShapeMultiplier;
+    float mountains = smoothedRidgeNoise(points[id.x], ridgeOctaveOffsets, ridgeGain, ridgeSharpness, ridgeNoiseSettings) * ridgeMultiplier;
+    mountains *= smoothstep(0, 1, layeredNoise(points[id.x], mountainMaskOffset, mountainMaskSettings) + mountainMaskShift);
+
+    points[id.x] *= baseRadius + continentNoise + mountains;
+}

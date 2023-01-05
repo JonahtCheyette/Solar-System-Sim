@@ -24,7 +24,7 @@ public class PlayerGravity : MonoBehaviour {
     }
 
     private void Orient() {
-        CelestialBody closestBody = GravityHandler.GetClosestPlanet(transform.position);
+        CelestialBodyPhysics closestBody = GravityHandler.GetClosestPlanet(transform.position);
         Vector3 targetDirection = (closestBody.Position - transform.position).normalized;
         Vector3 bodyDown = -transform.up;
         //rotate so that its down points torwards the planet

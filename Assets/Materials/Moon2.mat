@@ -1,0 +1,129 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Moon2
+  m_Shader: {fileID: 4800000, guid: f1abbdfc04e1b004bbaf22fe3bf4372e, type: 3}
+  m_ShaderKeywords: _USEEJECTA_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EjectaTexture:
+        m_Texture: {fileID: 2800000, guid: 4f339af1157fe804585fae4a88f3758e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMapOneHigh:
+        m_Texture: {fileID: 2800000, guid: cc0af75ab49dce34486f6c4e875d262e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMapOneLow:
+        m_Texture: {fileID: 2800000, guid: f2bc4d7f92e704f40babdb1343f7acb8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMapTwoHigh:
+        m_Texture: {fileID: 2800000, guid: 82e67266e68f415409ebc778f1db4699, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMapTwoLow:
+        m_Texture: {fileID: 2800000, guid: d3a17b5478378834f8097352679a2e5b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _BumpScale: 1
+    - _ColorBlendSmoothness: 67
+    - _ColorThreshold: 71
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _EjectaOffsetX: -0.019
+    - _EjectaOffsetY: -0.02
+    - _EjectaScale: 0.55
+    - _EjectaStrength: 2
+    - _FlatMetallic: 0
+    - _FlatSmoothness: 0
+    - _FresnelPow: 15
+    - _FresnelStrengthFar: 7.15
+    - _FresnelStrengthNear: 3
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Metallic: 0
+    - _Mode: 0
+    - _NormalOneBlendSmoothness: 0.5
+    - _NormalOneHighScale: 1
+    - _NormalOneHighStrength: 1
+    - _NormalOneLowScale: 1
+    - _NormalOneLowStrength: 1
+    - _NormalOneThreshold: 0.51
+    - _NormalTwoBlendSmoothness: 0.5
+    - _NormalTwoHighScale: 1
+    - _NormalTwoHighStrength: 0.5
+    - _NormalTwoLowScale: 1
+    - _NormalTwoLowStrength: 0.5
+    - _NormalTwoThreshold: 0.5
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _SteepMetallic: 0
+    - _SteepSmoothness: 0
+    - _UVSec: 0
+    - _UseEjecta: 1
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EjectaTintOne: {r: 0, g: 1, b: 1, a: 1}
+    - _EjectaTintTwo: {r: 1, g: 0, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FlatColor: {r: 0.32565323, g: 0.33962262, b: 0.06856532, a: 1}
+    - _FresnelCol: {r: 0, g: 0, b: 0, a: 1}
+    - _SteepColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []

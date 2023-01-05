@@ -4,7 +4,7 @@ using UnityEngine;
 
 [ImageEffectAllowedInSceneView] [ExecuteAlways]
 public class PlanetGradient : MonoBehaviour {
-    private CelestialBody[] bodies;
+    private CelestialBodyPhysics[] bodies;
     
     private List<PlanetPos> planetList;
     private List<Vector3> planetColors; //will be sent to the shader, the int named planetIndex/index in the various structs we have is simply the index of their color in this list
@@ -24,12 +24,12 @@ public class PlanetGradient : MonoBehaviour {
 
 
     private void Start() {
-        bodies = FindObjectsOfType<CelestialBody>();
+        bodies = FindObjectsOfType<CelestialBodyPhysics>();
 
         planetList = new List<PlanetPos>();
 
         planetColors = new List<Vector3>();
-        foreach (CelestialBody body in bodies) { // getting the planet color data
+        foreach (CelestialBodyPhysics body in bodies) { // getting the planet color data
             planetColors.Add(new Vector3(body.color.r, body.color.g, body.color.b));
         }
 
@@ -69,7 +69,7 @@ public class PlanetGradient : MonoBehaviour {
     private void UpdatePlanetList(int bodyIndex) {
         //getting the position and radius of the planet in viewportSpace
         Vector3 viewportPosition = cam.WorldToViewportPoint(bodies[bodyIndex].Position);
-        float radius = cam.WorldToViewportPoint(bodies[bodyIndex].Position + cam.transform.up * bodies[bodyIndex].radius).y - viewportPosition.y;
+        float radius = cam.WorldToViewportPoint(bodies[bodyIndex].Position + cam.transform.up * bodies[bodyIndex].Radius()).y - viewportPosition.y;
 
         PlanetPos currentPlanet = new PlanetPos(viewportPosition, bodyIndex, radius);
         if (currentPlanet.OnScreen(aspectRatio, haloRadiusMultiplier)) {

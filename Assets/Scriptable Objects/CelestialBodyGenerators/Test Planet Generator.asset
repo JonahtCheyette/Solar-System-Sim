@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11d1d6a27a33bdd4c8191cdc9141803d, type: 3}
+  m_Name: Test Planet Generator
+  m_EditorClassIdentifier: 
+  autoUpdate: 1
+  radius: 318.7
+  meshHandler: {fileID: 0}
+  seed: 1
+  oceanShallowColor: {r: 0, g: 1, b: 0.97254896, a: 0}
+  oceanDeepColor: {r: 0, g: 0.094518185, b: 1, a: 0}
+  oceanBlendMultiplier: 32.08
+  oceanAlphaMultiplier: 1000
+  oceanFloorDepth: 0.84
+  oceanDamper: 0.651
+  oceanSmoothing: 0.199
+  oceanDepthMultiplier: 1.74
+  genShapeMultiplier: 15
+  genShapeOctaves: 8
+  genShapeScale: 1.36
+  genShapePersistance: 0.5
+  genShapeLacunarity: 2
+  ridgeMultiplier: 20
+  ridgeOctaves: 7
+  ridgeScale: 1
+  ridgePersistance: 0.5
+  ridgeLacunarity: 2
+  ridgeGain: 1
+  ridgeSharpness: 3
+  mountainMaskOffset: {x: 0, y: 0, z: 0}
+  mountainMaskShift: -0.15
+  mountainMaskScale: 3
