@@ -10,32 +10,32 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e6bd9ec37fd01e14f962e2d931115a14, type: 3}
-  m_Name: Test Moon Generator
+  m_Name: Moon Generator
   m_EditorClassIdentifier: 
   autoUpdate: 1
   radius: 36.98
   meshHandler: {fileID: 0}
-  seed: 0
-  numCraters: 118
-  craterMultiplier: 12.38
+  seed: 17
+  numCraters: 206
+  craterMultiplier: 7.47
   craterSmoothing: 1.4
-  craterRadMinMax: {x: 0.06, y: 0.18}
+  craterRadMinMax: {x: 0.06, y: 0.21}
   rimSteepnessMinMax: {x: 5, y: 9}
   rimWidthMinMax: {x: 0.5, y: 1}
-  genShapeMultiplier: 55.07
+  genShapeMultiplier: 10
   genShapeOctaves: 5
   genShapeScale: 29.4
   genShapePersistance: 0.281
   genShapeLacunarity: 2
-  detailMultiplier: 3.41
+  detailMultiplier: 2
   detailOctaves: 8
   detailScale: 2
   detailPersistance: 0.5
   detailLacunarity: 2
-  ridgeMultiplier: 2.37
+  ridgeMultiplier: -2.24
   ridgeOctaves: 8
-  ridgeScale: 1.9
+  ridgeScale: 0.67
   ridgePersistance: 0.5
   ridgeLacunarity: 2
-  ridgeGain: 1.5
-  ridgeSharpness: 7.57
+  ridgeGain: 1.42
+  ridgeSharpness: 15.3

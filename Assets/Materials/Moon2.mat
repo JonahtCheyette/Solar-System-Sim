@@ -36,7 +36,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EjectaTexture:
-        m_Texture: {fileID: 2800000, guid: 4f339af1157fe804585fae4a88f3758e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 50f48503e973e5a46b9f906e181db3ed, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -52,19 +52,19 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapOneHigh:
-        m_Texture: {fileID: 2800000, guid: cc0af75ab49dce34486f6c4e875d262e, type: 3}
+        m_Texture: {fileID: 2800000, guid: fac989e4207f8de4a8399fc50197c605, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapOneLow:
-        m_Texture: {fileID: 2800000, guid: f2bc4d7f92e704f40babdb1343f7acb8, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1b823d42cacdcfc43859acb46a9f5afc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapTwoHigh:
-        m_Texture: {fileID: 2800000, guid: 82e67266e68f415409ebc778f1db4699, type: 3}
+        m_Texture: {fileID: 2800000, guid: c6cf67ddcf843ab4fa24719904c515e5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapTwoLow:
-        m_Texture: {fileID: 2800000, guid: d3a17b5478378834f8097352679a2e5b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 2ebc0dece80ad744b88dbfdf74c259e0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -77,8 +77,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
-    - _ColorBlendSmoothness: 67
-    - _ColorThreshold: 71
+    - _ColorBlendSmoothness: 10.3
+    - _ColorThreshold: 85.1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -96,17 +96,17 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NormalOneBlendSmoothness: 0.5
+    - _NormalOneBlendSmoothness: 0.4
     - _NormalOneHighScale: 1
-    - _NormalOneHighStrength: 1
+    - _NormalOneHighStrength: 0.51
     - _NormalOneLowScale: 1
-    - _NormalOneLowStrength: 1
-    - _NormalOneThreshold: 0.51
-    - _NormalTwoBlendSmoothness: 0.5
-    - _NormalTwoHighScale: 1
-    - _NormalTwoHighStrength: 0.5
-    - _NormalTwoLowScale: 1
-    - _NormalTwoLowStrength: 0.5
+    - _NormalOneLowStrength: 0.38
+    - _NormalOneThreshold: 0.5
+    - _NormalTwoBlendSmoothness: 0.52
+    - _NormalTwoHighScale: 0.87
+    - _NormalTwoHighStrength: 0.51
+    - _NormalTwoLowScale: 0.33
+    - _NormalTwoLowStrength: 0.86
     - _NormalTwoThreshold: 0.5
     - _OcclusionStrength: 1
     - _Parallax: 0.02
@@ -120,10 +120,9 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EjectaTintOne: {r: 0, g: 1, b: 1, a: 1}
-    - _EjectaTintTwo: {r: 1, g: 0, b: 1, a: 1}
+    - _EjectaTintOne: {r: 0.5, g: 0, b: 0, a: 1}
+    - _EjectaTintTwo: {r: 0.3018868, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FlatColor: {r: 0.32565323, g: 0.33962262, b: 0.06856532, a: 1}
     - _FresnelCol: {r: 0, g: 0, b: 0, a: 1}
-    - _SteepColor: {r: 0, g: 0, b: 0, a: 1}
-  m_BuildTextureStacks: []
+    - _SteepColor: {r: 0.3018868, g: 0.24725883, b: 0.19508722, a: 1}

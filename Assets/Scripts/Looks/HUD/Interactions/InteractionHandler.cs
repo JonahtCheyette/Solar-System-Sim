@@ -21,7 +21,7 @@ public static class InteractionHandler {
         interactionText.rectTransform.anchorMax = Vector2.one * 0.5f;
         interactionText.rectTransform.pivot = Vector2.one * 0.5f;
         interactionText.rectTransform.sizeDelta = new Vector2(canvasSize.x, 150);
-        interactionText.rectTransform.anchoredPosition = new Vector2(0, -canvasSize.y * 0.375f);
+        interactionText.rectTransform.anchoredPosition = new Vector2(0, -canvasSize.y * 0.2f);
         // setting the basic text settings
         interactionText.text = "";
         interactionText.fontSize = 44;

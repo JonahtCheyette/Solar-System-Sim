@@ -91,7 +91,6 @@ Shader "Hidden/OceanShader" {
 
                 float3 camPos = _WorldSpaceCameraPos;
                 float3 viewDir = i.viewVector / viewLength;
-                float3 clipPlanePos = camPos + i.viewVector * _ProjectionParams.y;
 
                 for (uint i = 0; i < numOceans; i++) {
                     float2 intersectionInfo = raySphereIntersection(oceans[i].size, positions[i], camPos, viewDir);
@@ -119,7 +118,6 @@ Shader "Hidden/OceanShader" {
                         float3 c = waveNormal * dot(waveNormal, toLight);
                         float specularHighlight = pow(max(dot(2*c-toLight, -viewDir), 0), smoothness);
 
-                        float dstAboveWater = length(clipPlanePos - positions[i]) - oceans[i].size;
                         specularHighlight *= (intersectionInfo.x > 0);
                         light += specularHighlight;
 

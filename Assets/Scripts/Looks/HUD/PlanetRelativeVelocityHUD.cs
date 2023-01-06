@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public static class PlanetRelativeVelocityHUD {
+    public static bool displayedLastFrame = false;
+
     private static Color lockedOnColor = Color.white;
     private static Color regularColor = Color.grey;
     private static float regularAlpha = 0.75f;
@@ -56,6 +58,8 @@ public static class PlanetRelativeVelocityHUD {
                 CreateMesh(body, relativeVelocity, lockedOn, unitsPerPixel);
                 DrawMesh(body, dirToPlayer, relativeVelocity, radius, lockedOn);
                 DisplayRelativeForwardVelocity(body, relativeVelocity, radius, lockedOn, unitsPerPixel);
+            } else {
+                HideRelevantText(false);
             }
             HideArrowToPlanet();
         }

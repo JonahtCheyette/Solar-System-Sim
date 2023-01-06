@@ -16,7 +16,7 @@ MonoBehaviour:
   meshHandler: {fileID: 0}
   seed: 0
   octaves: 8
-  scale: 159.66
+  scale: 54.4
   persistance: 0.58
   lacunarity: 2
   numEjectaCraters: 10
