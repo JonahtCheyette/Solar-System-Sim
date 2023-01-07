@@ -124,7 +124,7 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
         [new Vector2Int(2, 11)] = new Vector2Int(6, 19)
     };
 
-    private List<Vector3[]> tempVerts;
+    private List<Vector3[]> baseChunkVerts;
     private int[] chunkStartIndexes;
     private int tempVertsIndex;
     private int numChunksVerticesGenerated;
@@ -260,11 +260,11 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
         int numChunksPerFace = numChunksPerEdgeOfFace * numChunksPerEdgeOfFace;
         int numPointsPerChunk = (chunkSize + 7) * (chunkSize + 8) / 2 - 3;
         int totalNumPoints = 20 * numChunksPerFace * numPointsPerChunk - 60;
-        tempVerts = new List<Vector3[]>();
+        baseChunkVerts = new List<Vector3[]>();
         for (int i = 0; i < totalNumPoints / maxNumVertsPerArray; i++) {
-            tempVerts.Add(new Vector3[maxNumVertsPerArray]);
+            baseChunkVerts.Add(new Vector3[maxNumVertsPerArray]);
         }
-        tempVerts.Add(new Vector3[totalNumPoints % maxNumVertsPerArray]);
+        baseChunkVerts.Add(new Vector3[totalNumPoints % maxNumVertsPerArray]);
         tempVertsIndex = 0;
 
         chunks = new CelestialBodyChunk[20 * numChunksPerFace];
@@ -315,7 +315,7 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
                         }
                         chunks[chunkIndex] = new CelestialBodyChunk(transform, viewer, material, corners, visibleChunkMinAngle, LODAngles, colliderLODIndex, colliderMinAngle, chunkSize, cornerOnPointOfFace);
                         chunks[chunkIndex].UVMap = new Vector4[chunks[chunkIndex].vertexMap.Length, Mathf.CeilToInt(shaderDataGenerator.GetNumOutputFloats()/ 4f)];
-                        ThreadedDataRequester.RequestData(() => GeneratePoints(cornerOnPointOfFace, facePointIncrement, overFaceEdgeIncrement, vertToVertIncrement, foldEdges, baseVertex, chunkSize, upsideDown), (object o) => FillTempVerts((Vector3[])o, chunkIndex));
+                        ThreadedDataRequester.RequestData(() => GeneratePoints(cornerOnPointOfFace, facePointIncrement, overFaceEdgeIncrement, vertToVertIncrement, foldEdges, baseVertex, chunkSize, upsideDown), (object o) => FillBaseChunkVerts((Vector3[])o, chunkIndex));
                     }
                 }
             }
@@ -390,10 +390,10 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
         return points;
     }
 
-    private void FillTempVerts(Vector3[] points, int chunkIndex) {
+    private void FillBaseChunkVerts(Vector3[] points, int chunkIndex) {
         chunkStartIndexes[chunkIndex] = tempVertsIndex;
         for (int i = 0; i < points.Length; i++) {
-            tempVerts[tempVertsIndex / maxNumVertsPerArray][tempVertsIndex % maxNumVertsPerArray] = points[i];
+            baseChunkVerts[tempVertsIndex / maxNumVertsPerArray][tempVertsIndex % maxNumVertsPerArray] = points[i];
             tempVertsIndex++;
         }
         numChunksVerticesGenerated++;
@@ -409,11 +409,17 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
         celestialBodyGenerator.Setup();
         shaderDataGenerator.Setup(false, celestialBodyGenerator.ProvideDataToShader());
 
-        Vector4[,] UVData = new Vector4[(tempVerts.Count - 1) * maxNumVertsPerArray + tempVerts[tempVerts.Count - 1].Length, shaderDataGenerator.GetNumOutputFloats()];
+        Vector4[,] UVData = new Vector4[(baseChunkVerts.Count - 1) * maxNumVertsPerArray + baseChunkVerts[baseChunkVerts.Count - 1].Length, shaderDataGenerator.GetNumOutputFloats()];
         int UVIndex = 0;
-        for (int i = 0; i < tempVerts.Count; i++) {
-            tempVerts[i] = celestialBodyGenerator.GeneratePoints(tempVerts[i], ref minSqrRadius, ref maxSqrRadius);
-            Vector4[,] batchUVData = shaderDataGenerator.GetValues(tempVerts[i]);
+        for (int i = 0; i < baseChunkVerts.Count; i++) {
+            for (int j = 0; j < baseChunkVerts[i].Length; j++) {
+                Vector3 vert = baseChunkVerts[i][j];
+                if (float.IsNaN(vert.x) || float.IsNaN(vert.y) || float.IsNaN(vert.z) || vert == Vector3.negativeInfinity || vert == Vector3.positiveInfinity) {
+                    Debug.Log("NANI");
+                }
+            }
+            baseChunkVerts[i] = celestialBodyGenerator.GeneratePoints(baseChunkVerts[i], ref minSqrRadius, ref maxSqrRadius);
+            Vector4[,] batchUVData = shaderDataGenerator.GetValues(baseChunkVerts[i]);
             for (int j = 0; j < batchUVData.GetUpperBound(0) + 1; j++) {
                 for (int k = 0; k < batchUVData.GetUpperBound(1) + 1; k++) {
                     UVData[UVIndex, k] = batchUVData[j, k];
@@ -432,14 +438,24 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
 
         for (int i = 0; i < chunks.Length; i++) {
             for (int j = chunkStartIndexes[i]; j < chunkStartIndexes[i] + chunks[i].vertexMap.Length; j++) {
-                chunks[i].vertexMap[j - chunkStartIndexes[i]] = tempVerts[j / maxNumVertsPerArray][j % maxNumVertsPerArray];
+                Vector3 vert = baseChunkVerts[j / maxNumVertsPerArray][j % maxNumVertsPerArray];
+                if (float.IsNaN(vert.x) || float.IsNaN(vert.y) || float.IsNaN(vert.z)) {
+                    Debug.Log("what the fuck");
+                }
+                if (vert == Vector3.negativeInfinity) {
+                    Debug.Log("is this motherfucking");
+                }
+                if (vert == Vector3.positiveInfinity) {
+                    Debug.Log("horseshit");
+                }
+                chunks[i].vertexMap[j - chunkStartIndexes[i]] = baseChunkVerts[j / maxNumVertsPerArray][j % maxNumVertsPerArray];
                 for (int k = 0; k < UVData.GetUpperBound(1) + 1; k++) {
                     chunks[i].UVMap[j - chunkStartIndexes[i], k] = UVData[j, k];
                 }
             }
         }
 
-        tempVerts = null;
+        baseChunkVerts = null;
         GetLowRezMesh();
 
         finishedInitializing = true;

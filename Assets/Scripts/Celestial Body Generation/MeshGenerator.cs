@@ -182,7 +182,7 @@ public static class MeshGenerator {
                                 }
                             }
                             //adding the weighted normal to the normals for each vertex
-                            Vector3 weightedNormal = triangleWeightedNormal(verts[vertsIndex[0]], verts[vertsIndex[1]], verts[vertsIndex[2]]);
+                            Vector3 weightedNormal = TriangleWeightedNormal(verts[vertsIndex[0]], verts[vertsIndex[1]], verts[vertsIndex[2]]);
                             for (int k = 0; k < 3; k++) {
                                 if (vertexInMesh[k]) { normals[vertIndexMap[vertsIndex[k]]] += weightedNormal; }
                             }
@@ -218,7 +218,7 @@ public static class MeshGenerator {
                                 }
                             }
                             //the code for adding these weighted normals is much simpler
-                            Vector3 weightedNormal = triangleWeightedNormal(verts[vertsIndex[3]], verts[vertsIndex[4]], verts[vertsIndex[5]]);
+                            Vector3 weightedNormal = TriangleWeightedNormal(verts[vertsIndex[3]], verts[vertsIndex[4]], verts[vertsIndex[5]]);
                             for (int k = 3; k < 6; k++) {
                                 if (vertexInMesh[k]) { normals[vertIndexMap[vertsIndex[k]]] += weightedNormal; }
                             }
@@ -234,20 +234,21 @@ public static class MeshGenerator {
         //normalizing everything and calculating the tangents
         for (int i = 0; i < normals.Count; i++) {
             normals[i] = normals[i].normalized;
-            tangents.Add(tangentFromNormal(normals[i])); // I REALLY Want to know whether compute shaders are thread-safe
+            tangents.Add(TangentFromNormal(normals[i])); // I REALLY Want to know whether compute shaders are thread-safe
         }
 
         return new MeshData(vertices.ToArray(), normals.ToArray(), tangents.ToArray(), UV, tris.ToArray());
     }
 
-    private static Vector3 triangleWeightedNormal(Vector3 a, Vector3 b, Vector3 c) {
-        return Vector3.Cross(b - a, c - a);// not negative despite triangles being in clockwise order because unity uses a left handed coordinate system
+    private static Vector3 TriangleWeightedNormal(Vector3 a, Vector3 b, Vector3 c) {
+        Vector3 n = Vector3.Cross(b - a, c - a);
+        return n;// not negative despite triangles being in clockwise order because unity uses a left handed coordinate system
         //now the weighted normal is supposed to have a length equal to the area of the triangle, which is given by Vector3.Cross(b - a, c - a) / 2
         //However, I think I don't need to divide by 2 because the normals are currently all done by this function, meaning that getting rid of this /2
         //simply scale up each normal by 2 but then they get fed to a normalize function, which gives the same result either way
     }
 
-    public static Vector4 tangentFromNormal(Vector3 n) {
+    public static Vector4 TangentFromNormal(Vector3 n) {
         Vector3 t = Vector3.Normalize(Vector3.Cross(n, n == Vector3.down || n == Vector3.up ? Vector3.back : Vector3.down));
         return new Vector4(t.x, t.y, t.z, 1);
     }
@@ -271,7 +272,7 @@ public class MeshData {
         }
     }
 
-    public Mesh createMesh() {
+    public Mesh CreateMesh() {
         Mesh m = new Mesh();
         m.vertices = verts;
         m.triangles = tris;

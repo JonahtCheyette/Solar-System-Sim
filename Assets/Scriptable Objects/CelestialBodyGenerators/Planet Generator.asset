@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Planet Generator
   m_EditorClassIdentifier: 
   autoUpdate: 1
-  radius: 318.7
+  radius: 462.25
   meshHandler: {fileID: 0}
   seed: 1
   oceanShallowColor: {r: 0, g: 1, b: 0.97254896, a: 0}

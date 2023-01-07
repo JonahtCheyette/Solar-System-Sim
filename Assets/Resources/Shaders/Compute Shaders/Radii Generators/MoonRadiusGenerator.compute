@@ -2,6 +2,10 @@
 #include "..\..\Includes\NoiseFunctions.compute"
 #pragma kernel Generate
 
+float IsNaN(float x) {
+    return (x < 0. || x > 0. || x == 0.) ? 0. : 1.;
+}
+
 float smin(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a) / k, 0, 1);
     return lerp(b, a, h) - k * h * (1 - h);
@@ -49,6 +53,13 @@ void Generate(uint3 id : SV_DispatchThreadID) {
     float radius = baseRadius;
     for (uint i = 0; i < numCraters; i++) {
         float scaledDist = acos(dot(points[id.x], craters[i].center)) / craters[i].radius;
+        if (IsNaN(scaledDist)) {
+            if (dot(points[id.x], craters[i].center) > 0) {
+                scaledDist = 0;
+            } else {
+                scaledDist = 1000000;
+            }
+        }
 
         float cavity = scaledDist * scaledDist - 1;
         float rimX = min(0, scaledDist - 1 - craters[i].rimWidth);

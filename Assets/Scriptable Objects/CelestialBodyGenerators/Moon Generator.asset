@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Moon Generator
   m_EditorClassIdentifier: 
   autoUpdate: 1
-  radius: 36.98
+  radius: 90
   meshHandler: {fileID: 0}
   seed: 17
   numCraters: 206

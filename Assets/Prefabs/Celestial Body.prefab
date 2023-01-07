@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6726954406384306338}
   - component: {fileID: 7451508452923560684}
   - component: {fileID: 4832181478153508776}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Celestial Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}

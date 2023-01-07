@@ -148,7 +148,7 @@ public class CelestialBodyChunk {
         }
 
         private void OnMeshDataRecieved(object meshDataObject) {
-            mesh = ((MeshData)meshDataObject).createMesh();
+            mesh = ((MeshData)meshDataObject).CreateMesh();
             hasMesh = true;
             UpdateCallBack();
         }

@@ -73,20 +73,6 @@ public class PlayerHUDCoordinator : MonoBehaviour {
         // that has a clear line of sight from the camera to the body
         // and use that instead
         if (targetedBodyIndex == -2) {
-            /*
-            for (int i = 0; i < bodies.Length; i++) {
-                Vector3 offsetToPlanet = bodies[i].Position - camPosition;
-                float radius = bodies[i].Radius();
-                float distanceToPlanetSurface = offsetToPlanet.magnitude - radius;
-                if (distanceToPlanetSurface < minSensingDistance) {
-                    float alignmentWithCamera = Vector3.Dot(camForwards, offsetToPlanet.normalized);
-                    if (alignmentWithCamera > maxAlignment && !Physics.Raycast(camPosition + camForwards, offsetToPlanet.normalized, distanceToPlanetSurface - 2f)) {
-                        maxAlignment = alignmentWithCamera;
-                        targetedBodyIndex = i;
-                    }
-                }
-            }*/
-            
             // getting all the bodies within minAngleToBeConsidered of the camera's forwards ray
             // and save the data of the circle it will make on the screen
             List<BodyData> bodiesWithinMinAngle = new List<BodyData>();
@@ -154,9 +140,7 @@ public class PlayerHUDCoordinator : MonoBehaviour {
             PlanetRelativeVelocityHUD.DrawPlanetHUD(bodies[lockedOnBodyIndex], ship.RigidBody.velocity, true);
         } else {
             PlanetRelativeVelocityHUD.HideRelevantText(true);
-        }
-
-        
+        }   
     }
 
     private void CheckIfClearingLockOn() {
