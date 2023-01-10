@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26fb9b61ef6d06a49ae86e046bf3b1ed, type: 3}
+  m_Name: Test Warp
+  m_EditorClassIdentifier: 
+  autoUpdate: 1
+  radius: 462.25
+  meshHandler: {fileID: 0}
+  seed: 1
+  oceanShallowColor: {r: 0, g: 0.11066723, b: 1, a: 0}
+  oceanDeepColor: {r: 0.1561079, g: 1, b: 0, a: 0}
+  oceanBlendMultiplier: 4
+  oceanAlphaMultiplier: 1243.99
+  oceanFloorDepth: 0.44
+  oceanDamper: 1
+  oceanSmoothing: 1
+  oceanDepthMultiplier: 1
+  genShapeMultiplier: 70
+  genShapeOctaves: 8
+  genShapeScale: 2.6
+  genShapePersistance: 0.5
+  genShapeLacunarity: 2
+  warpNoiseOctaves: 8
+  warpNoiseScale: 5.21
+  warpNoisePersistance: 0.5
+  warpNoiseLacunarity: 2
+  warpStrengths:
+  - -0.5
+  - 0.5
+  ridgeMultiplier: 70
+  ridgeOctaves: 8
+  ridgeScale: 1.5
+  ridgePersistance: 0.5
+  ridgeLacunarity: 2
+  ridgeGain: 1.33
+  ridgeSharpness: 3.94
+  mountainMaskOffset: {x: 0, y: 0, z: 0}
+  mountainMaskShift: 0
+  mountainMaskScale: 2

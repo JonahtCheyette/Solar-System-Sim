@@ -1,6 +1,6 @@
 // Each #kernel tells which function to compile; you can have many kernels
-#include "..\..\Includes\NoiseFunctions.compute"
-#include "..\..\Includes\ShaderDataGeneratorBasics.compute"
+#include "..\..\Includes\NoiseFunctions.cginc"
+#include "..\..\Includes\ShaderDataGeneratorBasics.cginc"
 #pragma kernel GenerateWithTangents
 #pragma kernel GenerateWithoutTangents
 
@@ -10,6 +10,13 @@ struct WarpSettings {
 	float3 offset2;
 	float3 offset3;
 };
+
+float3 noiseSettings;
+StructuredBuffer<float3> offsets;
+
+float quickNoise(float3 p) {
+	return layeredNoise(p, offsets, noiseSettings);
+}
 
 RWStructuredBuffer<WarpSettings> warpSettings;
 uint numWarps;
@@ -24,10 +31,10 @@ void GenerateWithTangents(uint3 id : SV_DispatchThreadID) {
 		samplePos = float3(quickNoise(offsetPos + warpSettings[i].offset1), quickNoise(offsetPos + warpSettings[i].offset2), quickNoise(offsetPos + warpSettings[i].offset3));
 	}
 	output[baseIndex] = quickNoise(positions[id.x] + samplePos * warpSettings[numWarps - 1].scale);
-	float3 t = normalize(cross(normals[id.x], normals[id.x] == float3(0, -1, 0) || normals[id.x] == float3(0, 1, 0) ? float3(0, 0, -1) : float3(0, -1, 0)));
-	output[baseIndex + 1] = t.x;
-	output[baseIndex + 2] = t.y;
-	output[baseIndex + 3] = t.z;
+	float3 tangent = generateTangent(normals[id.x]);
+	output[baseIndex + 1] = tangent.x;
+	output[baseIndex + 2] = tangent.y;
+	output[baseIndex + 3] = tangent.z;
 	output[baseIndex + 4] = 1;
 }
 

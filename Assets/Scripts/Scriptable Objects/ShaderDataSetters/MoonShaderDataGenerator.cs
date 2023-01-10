@@ -105,7 +105,7 @@ public class MoonShaderDataGenerator : BaseShaderDataGenerator {
 
     private void SetWarpSettings() {
         NoiseWarpSettings[] settings = new NoiseWarpSettings[Mathf.Max(1, warpScales.Length)];
-        warpBuffer = new ComputeBuffer(settings.Length, sizeof(float) * 10);
+        warpBuffer = new ComputeBuffer(settings.Length, NoiseWarpSettings.Size());
         for (int i = 0; i < warpScales.Length; i++) {
             settings[i].scale = warpScales[i];
             settings[i].offsetOne = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * 10f;
@@ -148,13 +148,6 @@ public class MoonShaderDataGenerator : BaseShaderDataGenerator {
         if (warpBuffer != null) {
             warpBuffer.Dispose();
         }
-    }
-
-    private struct NoiseWarpSettings {
-        public float scale;
-        public Vector3 offsetOne;
-        public Vector3 offsetTwo;
-        public Vector3 offsetThree;
     }
     
     private struct EjectaCrater {

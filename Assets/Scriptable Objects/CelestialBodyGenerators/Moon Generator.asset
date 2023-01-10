@@ -16,9 +16,9 @@ MonoBehaviour:
   radius: 90
   meshHandler: {fileID: 0}
   seed: 17
-  numCraters: 206
-  craterMultiplier: 7.47
-  craterSmoothing: 1.4
+  numCraters: 215
+  craterMultiplier: 15.8
+  craterSmoothing: 0.12
   craterRadMinMax: {x: 0.06, y: 0.21}
   rimSteepnessMinMax: {x: 5, y: 9}
   rimWidthMinMax: {x: 0.5, y: 1}

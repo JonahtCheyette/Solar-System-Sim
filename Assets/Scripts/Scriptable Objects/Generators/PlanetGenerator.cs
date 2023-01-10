@@ -145,10 +145,4 @@ public class PlanetGenerator : CelestialBodyGenerator {
             mountainMaskOffsetBuffer.Dispose();
         }
     }
-
-    public override float[,] ProvideDataToShader() {
-        float[,] returnVal = new float[1, 1];
-        returnVal[0, 0] = radius;
-        return returnVal;
-    }
 }

@@ -1,0 +1,68 @@
+﻿#pragma kernel Generate
+#include "..\..\Includes\NoiseFunctions.cginc"
+#include "..\..\Includes\MathFunctions.cginc"
+#include "..\..\Includes\RadiusGeneratorBasics.cginc"
+
+struct WarpSettings {
+    float scale;
+    float3 offset1;
+    float3 offset2;
+    float3 offset3;
+};
+
+float3 genShapeNoiseSettings;
+float genShapeMultiplier;
+StructuredBuffer<float3> genShapeOctaveOffsets;
+
+float3 warpNoiseSettings;
+StructuredBuffer<float3> warpOctaveOffsets;
+StructuredBuffer<WarpSettings> warpSettings;
+uint numWarps;
+
+float3 ridgeNoiseSettings;
+float ridgeMultiplier;
+StructuredBuffer<float3> ridgeOctaveOffsets;
+float ridgeGain;
+float ridgeSharpness;
+
+float oceanDamper;
+float oceanFloorDepth;
+float oceanSmoothing;
+float oceanDepthMultiplier;
+
+StructuredBuffer<float3> mountainMaskOffset;
+float3 mountainMaskSettings;
+float mountainMaskShift;
+
+float quickWarpNoise(float3 p) {
+    return layeredNoise(p, warpOctaveOffsets, warpNoiseSettings);
+}
+
+float3 getSamplePos(float3 p, int warp) {
+    return float3(quickWarpNoise(p + warpSettings[warp].offset1), quickWarpNoise(p + warpSettings[warp].offset2), quickWarpNoise(p + warpSettings[warp].offset3));
+}
+
+[numthreads(32, 1, 1)]
+void Generate(uint3 id : SV_DispatchThreadID) {
+    points[id.x] = normalize(points[id.x]);
+
+    float3 samplePos = getSamplePos(points[id.x], 0);
+    for (uint i = 1; i < numWarps; i++) {
+        float3 offsetPos = points[id.x] + samplePos * warpSettings[i - 1].scale;
+        samplePos = getSamplePos(offsetPos, i);
+    }
+    float continentNoise = layeredNoise(points[id.x] + samplePos * warpSettings[numWarps - 1].scale, genShapeOctaveOffsets, genShapeNoiseSettings);
+
+    //adding oceans the way this works is by scaling down the continent noise, subtracting a certain amount from it, and then using smooth max to get the oceans
+    //works because ocean floor will be greater than continent noise in spots where continent noise is highly negative
+    float oceanFloor = continentNoise * oceanDamper - oceanFloorDepth;
+    continentNoise = smax(continentNoise, oceanFloor, oceanSmoothing);
+    continentNoise *= continentNoise < 0 ? oceanDepthMultiplier : 1;
+
+    //scale up the continent noise, calculate the mountains, then add everything together
+    continentNoise *= genShapeMultiplier;
+    float mountains = smoothedRidgeNoise(points[id.x], ridgeOctaveOffsets, ridgeGain, ridgeSharpness, ridgeNoiseSettings) * ridgeMultiplier;
+    mountains *= smoothstep(0, 1, layeredNoise(points[id.x], mountainMaskOffset, mountainMaskSettings) + mountainMaskShift);
+    
+    points[id.x] *= baseRadius + continentNoise + mountains;
+}

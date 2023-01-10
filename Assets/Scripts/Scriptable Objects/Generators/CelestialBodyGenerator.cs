@@ -137,8 +137,9 @@ public class CelestialBodyGenerator : ScriptableObject {
     }
 
     public virtual float[,] ProvideDataToShader() {
-        Debug.Log("calling Base ProvideDataToShader. This shouldn't be happening");
-        return new float[0,0];
+        float[,] returnVal = new float[1, 1];
+        returnVal[0, 0] = radius;
+        return returnVal;
     }
 
     protected static Vector3 ColToVec(Color c) {

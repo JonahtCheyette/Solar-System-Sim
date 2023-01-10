@@ -1,0 +1,54 @@
+﻿#pragma kernel Generate
+#include "..\..\Includes\NoiseFunctions.cginc"
+#include "..\..\Includes\MathFunctions.cginc"
+#include "..\..\Includes\RadiusGeneratorBasics.cginc"
+
+static const float PI = 3.14159265f;
+
+struct WorleyPlate {
+    float boost;
+    float3 seed;
+};
+
+StructuredBuffer<WorleyPlate> worleyBuffer;
+uint numWorleyPoints;
+float worleyThreshold;
+float maxWorleyBoost;
+float worleyMultiplier;
+
+[numthreads(32, 1, 1)]
+void Generate(uint3 id : SV_DispatchThreadID) { // too many if statements in this code
+    points[id.x] = normalize(points[id.x]);
+
+    uint worleyPlateIndex = numWorleyPoints;
+    float minDist = 2 * PI;
+    float secondSmallestDist = minDist;
+	for (uint i = 0; i < numWorleyPoints; i++) {
+		float dist = acos(dot(points[id.x], worleyBuffer[i].seed));
+        if (IsNaN(dist)) {
+            if (dot(points[id.x], worleyBuffer[i].seed) > 0) {
+                dist = 0;
+            } else {
+                dist = PI;
+            }
+        }
+        if (dist < minDist) {
+            secondSmallestDist = minDist;
+            minDist = dist;
+            worleyPlateIndex = i;
+        } else if (dist < secondSmallestDist) {
+            secondSmallestDist = dist;
+        }
+	}
+
+    float radius = baseRadius;
+    if (worleyPlateIndex != numWorleyPoints) {
+        radius -= maxWorleyBoost;
+        if(secondSmallestDist - minDist >= worleyThreshold) { // on a plate
+            radius += worleyBuffer[worleyPlateIndex].boost;
+            radius += worleyMultiplier * (worleyThreshold - (minDist - secondSmallestDist));
+        }
+    }
+
+    points[id.x] *= radius;
+}

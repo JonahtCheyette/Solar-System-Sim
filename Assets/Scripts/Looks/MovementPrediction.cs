@@ -21,8 +21,8 @@ public class MovementPrediction : MonoBehaviour {
             if (!Application.isPlaying) {
                 Initialize();
                 Simulate();
-                DrawPaths();
             }
+            DrawPaths();
         }
     }
 
@@ -32,6 +32,10 @@ public class MovementPrediction : MonoBehaviour {
             Simulate();
             DrawPaths();
         }
+    }
+
+    public void Clear() {
+        points = new Vector3[0][];
     }
 
     void Initialize() {

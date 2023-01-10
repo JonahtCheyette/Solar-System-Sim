@@ -1,5 +1,5 @@
-#include "..\..\Includes\NoiseFunctions.compute"
-#include "..\..\Includes\ShaderDataGeneratorBasics.compute"
+#include "..\..\Includes\NoiseFunctions.cginc"
+#include "..\..\Includes\ShaderDataGeneratorBasics.cginc"
 #pragma kernel GenerateWithTangents
 #pragma kernel GenerateWithoutTangents
 
@@ -7,10 +7,10 @@
 void GenerateWithTangents(uint3 id : SV_DispatchThreadID) {
 	//output: first value is noise value, last 4 are tangent values
 	int baseIndex = id.x * 4;
-	float3 t = normalize(cross(normals[id.x], normals[id.x] == float3(0, -1, 0) || normals[id.x] == float3(0, 1, 0) ? float3(0, 0, -1) : float3(0, -1, 0)));
-	output[baseIndex] = t.x;
-	output[baseIndex + 1] = t.y;
-	output[baseIndex + 2] = t.z;
+	float3 tangent = generateTangent(normals[id.x]);
+	output[baseIndex] = tangent.x;
+	output[baseIndex + 1] = tangent.y;
+	output[baseIndex + 2] = tangent.z;
 	output[baseIndex + 3] = 1;
 }
 

@@ -13,5 +13,9 @@ public class MovementPredictionEditor : Editor {
         if (GUILayout.Button("Predict")) {
             movementPrediction.PredictMovement();
         }
+
+        if (GUILayout.Button("Clear")) {
+            movementPrediction.Clear();
+        }
     }
 }
