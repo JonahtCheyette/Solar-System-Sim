@@ -31,13 +31,11 @@ public class MoonShaderDataGenerator : BaseShaderDataGenerator {
 
     public override void Setup(bool generateTangents, float[,] input) {
         GetGeneratorAndKernel("MoonShaderDataGenerator", generateTangents);
-        Random.InitState(seed);
         base.Setup(generateTangents, input);
-        Random.InitState(seed);
-        SetStaticShaderVariables();
     }
 
     protected override void UnpackValuesFromShapeGenerator(float[,] input) {
+        Random.InitState(seed);
         SetEjectaBuffer(input);
     }
 
@@ -85,7 +83,8 @@ public class MoonShaderDataGenerator : BaseShaderDataGenerator {
         material.SetInt("numEjectaCraters", ejectaBuffer.count);
     }
 
-    private void SetStaticShaderVariables() {
+    protected override void SetStaticShaderValues(float[,] input) {
+        Random.InitState(seed);
         GenerateOffsets();
         SetWarpSettings();
         generator.SetBuffer(kernel, "offsets", offsetBuffer);

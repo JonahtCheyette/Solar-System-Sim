@@ -96,14 +96,6 @@ public class BaseShaderDataGenerator : ScriptableObject {
         }
     }
 
-    private void SetupBuffers(int numValues, int numFloatsPerValue, bool useNormals) {
-        SetupOutputBuffer(numValues, numFloatsPerValue);
-        SetupBuffer(ref positionBuffer, numValues);
-        if (useNormals) {
-            SetupBuffer(ref normalBuffer, numValues);
-        }
-    }
-
     protected void GetGeneratorAndKernel(string generatorName, bool generateTangents) {
         generator = (ComputeShader)Resources.Load("Shaders/Compute Shaders/Shader Data Generators/" + generatorName);
         kernel = generator.FindKernel(generateTangents ? "GenerateWithTangents" : "GenerateWithoutTangents");
@@ -111,8 +103,13 @@ public class BaseShaderDataGenerator : ScriptableObject {
 
     public virtual void Setup(bool generateTangents, float[,] input) {
         UnpackValuesFromShapeGenerator(input);
+        SetStaticShaderValues(input);
         SendDataToMaterial(input);
     }
+
+    protected virtual void UnpackValuesFromShapeGenerator(float[,] input) { }
+
+    protected virtual void SetStaticShaderValues(float[,] input) { }
 
     protected virtual void SendDataToMaterial(float[,] input) { }
 
@@ -123,10 +120,31 @@ public class BaseShaderDataGenerator : ScriptableObject {
         }
     }
 
+    private float[] RunShader(Mesh input) {
+        int numFloatsPerVertex = GetNumOutputFloats() + 4;
+        SetupPerVertexData(input, numFloatsPerVertex);
+
+        generator.Dispatch(kernel, Mathf.CeilToInt(positionBuffer.count / 32f), 1, 1);
+        return GetValuesFromShader();
+    }
+
     private void SetupPerVertexData(Mesh m, int numFloatsPerValue) {
         SetupBuffers(m.vertices.Length, numFloatsPerValue, true);
         FillBuffers(m);
         SetDynamicShaderBuffers(true);
+    }
+
+    private void FillBuffers(Mesh m) {
+        positionBuffer.SetData(m.vertices);
+        normalBuffer.SetData(m.normals);
+    }
+
+    private float[] RunShader(Vector3[] input) {
+        int numFloatsPerVertex = GetNumOutputFloats();
+        SetupPerVertexData(input, numFloatsPerVertex);
+
+        generator.Dispatch(kernel, Mathf.CeilToInt(positionBuffer.count / 32f), 1, 1);
+        return GetValuesFromShader();
     }
 
     private void SetupPerVertexData(Vector3[] vertices, int numFloatsPerValue) {
@@ -135,13 +153,16 @@ public class BaseShaderDataGenerator : ScriptableObject {
         SetDynamicShaderBuffers(false);
     }
 
-    private void FillBuffers(Mesh m) {
-        positionBuffer.SetData(m.vertices);
-        normalBuffer.SetData(m.normals);
-    }
-
     private void FillBuffer(Vector3[] input) {
         positionBuffer.SetData(input);
+    }
+
+    private void SetupBuffers(int numValues, int numFloatsPerValue, bool useNormals) {
+        SetupOutputBuffer(numValues, numFloatsPerValue);
+        SetupBuffer(ref positionBuffer, numValues);
+        if (useNormals) {
+            SetupBuffer(ref normalBuffer, numValues);
+        }
     }
 
     protected virtual void SetDynamicShaderBuffers(bool setNormals) {
@@ -151,22 +172,6 @@ public class BaseShaderDataGenerator : ScriptableObject {
         }
         generator.SetBuffer(kernel, "output", outputBuffer);
     }
-
-    private float[] RunShader(Mesh input) {
-        int numFloatsPerVertex = GetNumOutputFloats() + 4;
-        SetupPerVertexData(input, numFloatsPerVertex);
-
-        generator.Dispatch(kernel, Mathf.CeilToInt(positionBuffer.count / 32f), 1, 1);
-        return GetValuesFromShader();
-    }
-
-    private float[] RunShader(Vector3[] input) {
-        int numFloatsPerVertex = GetNumOutputFloats();
-        SetupPerVertexData(input, numFloatsPerVertex);
-
-        generator.Dispatch(kernel, Mathf.CeilToInt(positionBuffer.count / 32f), 1, 1);
-        return GetValuesFromShader();
-    } 
 
     private float[] GetValuesFromShader() {
         float[] output = new float[outputBuffer.count];
@@ -219,6 +224,4 @@ public class BaseShaderDataGenerator : ScriptableObject {
 
         return reformattedOutput;
     }
-
-    protected virtual void UnpackValuesFromShapeGenerator(float[,] input) { }
 }

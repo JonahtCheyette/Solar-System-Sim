@@ -15,15 +15,16 @@ MonoBehaviour:
   autoUpdate: 1
   radius: 426.25
   meshHandler: {fileID: 0}
-  seed: 0
+  seed: 2
   useOcean: 1
-  oceanRadiusBoost: 28.5
+  oceanRadiusBoost: 2.6
   oceanShallowColor: {r: 0, g: 0.20422697, b: 1, a: 0}
   oceanDeepColor: {r: 0.94275093, g: 0, b: 1, a: 0}
   oceanBlendMultiplier: 35.44
   oceanAlphaMultiplier: 1000
-  numWorleyPoints: 15
+  numWorleyPoints: 64
   amountPerturbed: 0.232
   worleyThreshold: 0.06
+  worleyBlend: 0.03
   worleyBoostMinMax: {x: 13.6, y: 27.75}
-  worleyMultiplier: 70
+  worleyMultiplierMinMax: {x: -70, y: 30}

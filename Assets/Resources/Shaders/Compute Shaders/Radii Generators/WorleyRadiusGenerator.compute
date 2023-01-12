@@ -7,6 +7,7 @@ static const float PI = 3.14159265f;
 
 struct WorleyPlate {
     float boost;
+    float multiplier;
     float3 seed;
 };
 
@@ -14,7 +15,7 @@ StructuredBuffer<WorleyPlate> worleyBuffer;
 uint numWorleyPoints;
 float worleyThreshold;
 float maxWorleyBoost;
-float worleyMultiplier;
+float worleyBlend;
 
 [numthreads(32, 1, 1)]
 void Generate(uint3 id : SV_DispatchThreadID) { // too many if statements in this code
@@ -45,8 +46,8 @@ void Generate(uint3 id : SV_DispatchThreadID) { // too many if statements in thi
     if (worleyPlateIndex != numWorleyPoints) {
         radius -= maxWorleyBoost;
         if(secondSmallestDist - minDist >= worleyThreshold) { // on a plate
-            radius += worleyBuffer[worleyPlateIndex].boost;
-            radius += worleyMultiplier * (worleyThreshold - (minDist - secondSmallestDist));
+            radius += worleyBuffer[worleyPlateIndex].boost * smoothstep(worleyThreshold, worleyThreshold + worleyBlend, secondSmallestDist - minDist);
+            radius += worleyBuffer[worleyPlateIndex].multiplier * (worleyThreshold - (minDist - secondSmallestDist));
         }
     }
 

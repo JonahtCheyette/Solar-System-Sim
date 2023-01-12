@@ -24,11 +24,15 @@ public class WorleyGenerator : CelestialBodyGenerator {
     public float amountPerturbed;
     [Range(0, Mathf.PI)]
     public float worleyThreshold;
+    [Min(0)]
+    public float worleyBlend;
     public Vector2 worleyBoostMinMax;
-    public float worleyMultiplier;
+    public Vector2 worleyMultiplierMinMax;
 
     private ComputeBuffer worleyBuffer;
     private float maxWorleyBoostGenerated;
+
+    private Vector3[] seeds;
 
     public override bool HasOceanEffect() {
         return useOcean;
@@ -41,6 +45,7 @@ public class WorleyGenerator : CelestialBodyGenerator {
     protected override void OnValidate() {
         worleyBoostMinMax.x = Mathf.Max(0, worleyBoostMinMax.x);
         worleyBoostMinMax.y = Mathf.Max(worleyBoostMinMax.y, worleyBoostMinMax.x);
+        worleyMultiplierMinMax.y = Mathf.Max(worleyMultiplierMinMax.y, worleyMultiplierMinMax.x);
         base.OnValidate();
     }
 
@@ -52,8 +57,8 @@ public class WorleyGenerator : CelestialBodyGenerator {
 
         generator.SetBuffer(kernel, "worleyBuffer", worleyBuffer);
         generator.SetFloat("worleyThreshold", worleyThreshold);
+        generator.SetFloat("worleyBlend", worleyBlend);
         generator.SetFloat("maxWorleyBoost", maxWorleyBoostGenerated);
-        generator.SetFloat("worleyMultiplier", worleyMultiplier);
         generator.SetInt("numWorleyPoints", numWorleyPoints);
     }
 
@@ -67,6 +72,7 @@ public class WorleyGenerator : CelestialBodyGenerator {
             worleyBuffer = new ComputeBuffer(Mathf.Max(1, numWorleyPoints), WorleyPlate.Size());
         }
         WorleyPlate[] plates = new WorleyPlate[Mathf.Max(1, numWorleyPoints)];
+        seeds = new Vector3[numWorleyPoints];
         maxWorleyBoostGenerated = float.MinValue;
 
         float phi = 2 * Mathf.PI * goldenRatio;
@@ -78,16 +84,18 @@ public class WorleyGenerator : CelestialBodyGenerator {
 
             float x = Mathf.Cos(angle) * scaledRadius;
             float z = Mathf.Sin(angle) * scaledRadius;
-            Vector3 seed = (new Vector3(x, y, z) + Random.onUnitSphere * amountPerturbed).normalized;
+            seeds[i] = (new Vector3(x, y, z) + Random.onUnitSphere * amountPerturbed).normalized;
 
             float boost = Random.Range(worleyBoostMinMax.x, worleyBoostMinMax.y);
             maxWorleyBoostGenerated = Mathf.Max(maxWorleyBoostGenerated, boost);
 
-            plates[i] = new WorleyPlate(seed, boost);
+            float multiplier = Random.Range(worleyMultiplierMinMax.x, worleyMultiplierMinMax.y);
+
+            plates[i] = new WorleyPlate(seeds[i], boost, multiplier);
         }
 
         if(numWorleyPoints == 0) {
-            plates[0] = new WorleyPlate(Vector3.zero, 0);
+            plates[0] = new WorleyPlate(Vector3.zero, 0, 0);
         }
 
         worleyBuffer.SetData(plates);
@@ -104,17 +112,30 @@ public class WorleyGenerator : CelestialBodyGenerator {
         }
     }
 
+    public override float[,] ProvideDataToShader() {
+        float[,] returnVal = new float[seeds.Length + 1, 3];
+        returnVal[0, 0] = radius;
+        for (int i = 1; i < seeds.Length + 1; i++) {
+            returnVal[i, 0] = seeds[i - 1].x;
+            returnVal[i, 1] = seeds[i - 1].y;
+            returnVal[i, 2] = seeds[i - 1].z;
+        }
+        return returnVal;
+    }
+
     private struct WorleyPlate {
         private float boost;
+        private float multiplier;
         private Vector3 seed;
 
-        public WorleyPlate (Vector3 s, float b) {
+        public WorleyPlate (Vector3 s, float b, float m) {
             boost = b;
+            multiplier = m;
             seed = s;
         }
 
         public static int Size() {
-            return sizeof(float) * 4;
+            return sizeof(float) * 5;
         }
     }
 }

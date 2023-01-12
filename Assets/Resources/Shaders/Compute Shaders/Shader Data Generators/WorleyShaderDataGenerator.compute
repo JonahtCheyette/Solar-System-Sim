@@ -1,0 +1,82 @@
+﻿#include "..\..\Includes\NoiseFunctions.cginc"
+#include "..\..\Includes\ShaderDataGeneratorBasics.cginc"
+#include "..\..\Includes\MathFunctions.cginc"
+#pragma kernel GenerateWithTangents
+#pragma kernel GenerateWithoutTangents
+
+static const float PI = 3.14159265f;
+
+struct SeedValue {
+	float3 seed;
+	float3 color;
+};
+
+uint numSeeds;
+StructuredBuffer<SeedValue> seedBuffer;
+
+[numthreads(32, 1, 1)]
+void GenerateWithTangents(uint3 id : SV_DispatchThreadID) {
+	//output: first 3 values is color value, last 4 are tangent values
+	int baseIndex = id.x * 7;
+
+	output[baseIndex] = 0;
+	output[baseIndex + 1] = 0;
+	output[baseIndex + 2] = 0;
+
+	float3 normPos = normalize(positions[id.x]);
+	float3 color;
+	float minDist = 5;
+	for (uint i = 0; i < numSeeds; i++) {
+		float dist = acos(dot(normPos, seedBuffer[i].seed));
+		if (IsNaN(dist)) {
+			if (dot(normPos, seedBuffer[i].seed) > 0) {
+				dist = 0;
+			} else {
+				dist = PI;
+			}
+		}
+		if (dist < minDist) {
+			minDist = dist;
+			output[baseIndex] = seedBuffer[i].color.x;
+			output[baseIndex + 1] = seedBuffer[i].color.y;
+			output[baseIndex + 2] = seedBuffer[i].color.z;
+		}
+	}
+
+	float3 tangent = generateTangent(normals[id.x]);
+	output[baseIndex + 3] = tangent.x;
+	output[baseIndex + 4] = tangent.y;
+	output[baseIndex + 5] = tangent.z;
+	output[baseIndex + 6] = 1;
+}
+
+[numthreads(32, 1, 1)]
+void GenerateWithoutTangents(uint3 id : SV_DispatchThreadID) {
+	//output: color value
+	int baseIndex = id.x * 3;
+
+	output[baseIndex] = 0;
+	output[baseIndex + 1] = 0;
+	output[baseIndex + 2] = 0;
+
+	float3 normPos = normalize(positions[id.x]);
+	float3 color;
+	float minDist = 5;
+	for (uint i = 0; i < numSeeds; i++) {
+		float dist = acos(dot(normPos, seedBuffer[i].seed));
+		if (IsNaN(dist)) {
+			if (dot(normPos, seedBuffer[i].seed) > 0) {
+				dist = 0;
+			}
+			else {
+				dist = PI;
+			}
+		}
+		if (dist < minDist) {
+			minDist = dist;
+			output[baseIndex] = seedBuffer[i].color.x;
+			output[baseIndex + 1] = seedBuffer[i].color.y;
+			output[baseIndex + 2] = seedBuffer[i].color.z;
+		}
+	}
+}

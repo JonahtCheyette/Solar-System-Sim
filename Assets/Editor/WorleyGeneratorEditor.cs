@@ -18,8 +18,9 @@ public class WorleyGeneratorEditor : Editor {
     SerializedProperty numWorleyPoints;
     SerializedProperty amountPerturbed;
     SerializedProperty worleyThreshold;
+    SerializedProperty worleyBlend;
     SerializedProperty worleyBoostMinMax;
-    SerializedProperty worleyMultiplier;
+    SerializedProperty worleyMultiplierMinMax;
 
     GUIContent oceanGUI = new GUIContent("Ocean Settings");
     GUIContent worleyGUI = new GUIContent("Worley Settings");
@@ -43,8 +44,9 @@ public class WorleyGeneratorEditor : Editor {
         numWorleyPoints = serializedObject.FindProperty("numWorleyPoints");
         amountPerturbed = serializedObject.FindProperty("amountPerturbed");
         worleyThreshold = serializedObject.FindProperty("worleyThreshold");
+        worleyBlend = serializedObject.FindProperty("worleyBlend");
         worleyBoostMinMax = serializedObject.FindProperty("worleyBoostMinMax");
-        worleyMultiplier = serializedObject.FindProperty("worleyMultiplier");
+        worleyMultiplierMinMax = serializedObject.FindProperty("worleyMultiplierMinMax");
 
         oceanDropdown = EditorPrefs.GetBool(nameof(oceanDropdown), false);
         worleyDropdown = EditorPrefs.GetBool(nameof(worleyDropdown), false);
@@ -80,8 +82,9 @@ public class WorleyGeneratorEditor : Editor {
             EditorGUILayout.PropertyField(numWorleyPoints);
             EditorGUILayout.PropertyField(amountPerturbed);
             EditorGUILayout.PropertyField(worleyThreshold);
+            EditorGUILayout.PropertyField(worleyBlend);
             EditorGUILayout.PropertyField(worleyBoostMinMax);
-            EditorGUILayout.PropertyField(worleyMultiplier);
+            EditorGUILayout.PropertyField(worleyMultiplierMinMax);
         }
         SaveState();
 
