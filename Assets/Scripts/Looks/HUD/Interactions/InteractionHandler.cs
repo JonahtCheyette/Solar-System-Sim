@@ -82,6 +82,7 @@ public static class InteractionHandler {
             }
             interactionText.text += interactionsInRange[i].GetMessage();
         }
+
         AnimateTextColor();
     }
 

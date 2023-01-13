@@ -18,9 +18,11 @@ public static class Controls {
     public static KeyCode rightKey = KeyCode.D;
     public static KeyCode rollCounterKey = KeyCode.Q;
     public static KeyCode rollClockwiseKey = KeyCode.E;      
-    public static KeyCode leaveKey = KeyCode.X;
+    public static KeyCode stopPilotingKey = KeyCode.P;
+    public static KeyCode hoverKey = KeyCode.H;
 
     //interactions
     public static KeyCode doorKey = KeyCode.C;
-    public static KeyCode startPilotingShipKey = KeyCode.X;
+    public static KeyCode startPilotingShipKey = KeyCode.P;
+    public static KeyCode leaveShipKey = KeyCode.X;
 }

@@ -15,7 +15,11 @@ public class ShipController : MonoBehaviour {
     public float rotSpeed = 5;
     public float rollSpeed = 30;
     public float rotSmoothSpeed = 10;
+
+    [Header("Operation")]
     public bool lockCursor = true;
+    [Min(20)]
+    public float hoverDist = 40;
 
     private Quaternion targetRot;
     private Quaternion smoothedRot;
@@ -24,6 +28,10 @@ public class ShipController : MonoBehaviour {
     private ShipPilotInteraction pilotInteraction;
 
     private List<string> collidingWith;
+
+    public bool hovering { private set; get; }
+    private CelestialBodyPhysics hoverBase;
+    private Vector3 hoverOffset;
 
     // Start is called before the first frame update
     private void Awake() {
@@ -34,9 +42,10 @@ public class ShipController : MonoBehaviour {
         InitializeRigidBody();
     }
 
-    void Start() {
+    private void Start() {
         piloted = false;
         FindStartingPosition();
+        PlacePlayer();
         targetRot = transform.rotation;
         smoothedRot = transform.rotation;
         collidingWith = new List<string>();
@@ -45,22 +54,35 @@ public class ShipController : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         if (piloted) {
-            HandleMovement();
-            if (ShouldBeAbleToExit()) {
-                CheckIfExiting();
+            if (!hovering) {
+                HandleMovement();
+
+                CheckIfShouldHover();
+            } else {
+                CheckIfShouldLeave();
+
+                CheckToStopHovering();
             }
+        }
+        CheckForCrash();
+        if (hovering) {
+            rigidBody.freezeRotation = true;
+            Hover();
+        } else {
+            rigidBody.freezeRotation = false;
         }
     }
 
     void FixedUpdate() {
-        rigidBody.AddForce(GravityHandler.CalculateAcceleration(transform.position), ForceMode.Acceleration);
+        if (!hovering) {
+            rigidBody.AddForce(GravityHandler.CalculateAcceleration(transform.position), ForceMode.Acceleration);
 
-        // Thrusters
-        Vector3 thrustDir = transform.TransformVector(thrusterInput);
-        rigidBody.AddForce(thrustDir * thrustStrength, ForceMode.Acceleration);
-
-        if (collidingWith.Count == 0) {
-            rigidBody.MoveRotation(smoothedRot);
+            // Thrusters
+            Vector3 thrustDir = transform.TransformVector(thrusterInput);
+            rigidBody.AddForce(thrustDir * thrustStrength, ForceMode.Acceleration);
+            if (collidingWith.Count == 0) {
+                rigidBody.MoveRotation(smoothedRot);
+            }
         }
     }
 
@@ -101,13 +123,40 @@ public class ShipController : MonoBehaviour {
         return axis;
     }
 
-    private bool ShouldBeAbleToExit() {
-        return collidingWith.Count > 0;
+    private bool CanHover() {
+        CelestialBodyPhysics closestPlanet = GravityHandler.GetClosestPlanet(transform.position);
+        float adjustedRadius = closestPlanet.Radius() + hoverDist;
+        return (closestPlanet.transform.position - transform.position).sqrMagnitude <= adjustedRadius * adjustedRadius;
     }
 
-    private void CheckIfExiting() {
-        if (Input.GetKeyDown(Controls.leaveKey)) {
+    private void CheckIfShouldHover() {
+        if (Input.GetKeyDown(Controls.hoverKey) && CanHover()) {
+            hoverBase = GravityHandler.GetClosestPlanet(transform.position);
+            float hoverRadius = hoverBase.Radius() + hoverDist;
+            hoverOffset = (transform.position - hoverBase.Position).normalized * hoverRadius;
+            transform.position = hoverBase.Position + hoverOffset;
+            transform.rotation *= Quaternion.FromToRotation(-transform.up, -hoverOffset / hoverRadius);
+            rigidBody.velocity = hoverBase.velocity;
+
+            hovering = true;
+        }
+    }
+
+    private void Hover() {
+        transform.position = hoverBase.Position + hoverOffset;
+        rigidBody.velocity = hoverBase.velocity;
+    }
+
+    private void CheckIfShouldLeave() {
+        if (Input.GetKeyDown(Controls.stopPilotingKey)) {
             pilotInteraction.StopPiloting();
+        }
+    }
+
+    private void CheckToStopHovering() {
+        if (Input.GetKeyDown(Controls.hoverKey)) {
+            rigidBody.velocity = hoverBase.velocity;
+            hovering = false;
         }
     }
 
@@ -133,13 +182,35 @@ public class ShipController : MonoBehaviour {
     }
 
     private void FindStartingPosition() {
+        hoverBase = GravityHandler.GetClosestPlanet(transform.position);
+        float hoverRadius = hoverBase.Radius() + hoverDist;
+        hoverOffset = (transform.position - hoverBase.Position).normalized * hoverRadius;
+        transform.position = hoverBase.Position + hoverOffset;
+        transform.rotation *= Quaternion.FromToRotation(-transform.up, -hoverOffset.normalized);
+        rigidBody.velocity = hoverBase.velocity;
+        /*
         CelestialBodyPhysics startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
         Vector3 dirFromPlanetToShip = (transform.position - startingPlanet.Position).normalized;
         Vector3 targetDirection = -dirFromPlanetToShip;
 
-        rigidBody.position = startingPlanet.Position + dirFromPlanetToShip * (1.1f * startingPlanet.Radius());
+        transform.position = startingPlanet.Position + dirFromPlanetToShip * (1.3f * startingPlanet.Radius());
         transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
-        rigidBody.velocity = startingPlanet.initialVelocity;
+        //rigidBody.velocity = startingPlanet.initialVelocity;
+        */
+
+        hovering = true;
+    }
+
+    private void PlacePlayer() {
+        FirstPersonController player = FindObjectOfType<FirstPersonController>();
+        player.transform.position = transform.TransformPoint(Vector3.up * 1.5f);
+        player.rb.velocity = GravityHandler.GetClosestPlanet(transform.position).initialVelocity;
+    }
+
+    private void CheckForCrash() {
+        if(collidingWith.Count > 0) {
+            Application.Quit(); // will have to replace with proper death
+        }
     }
 
     public Rigidbody RigidBody {

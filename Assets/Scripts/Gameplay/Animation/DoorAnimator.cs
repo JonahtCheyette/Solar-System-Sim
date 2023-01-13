@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class DoorAnimator : MonoBehaviour {
     private Animator animator;
-    private ShipDoorController controller;
+    private ShipPilotInteraction controller;
 
     void Start() {
         animator = GetComponent<Animator>();
-        controller = GetComponentInParent<ShipDoorController>();
+        controller = GetComponentInParent<ShipPilotInteraction>();
     }
 
     private void Update() {
-        animator.SetBool("doorIsOpen", controller.isOpen);
+        animator.SetBool("doorIsOpen", controller.doorOpen);
     }
 }

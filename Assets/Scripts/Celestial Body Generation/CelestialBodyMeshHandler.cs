@@ -412,12 +412,6 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
         Vector4[,] UVData = new Vector4[(baseChunkVerts.Count - 1) * maxNumVertsPerArray + baseChunkVerts[baseChunkVerts.Count - 1].Length, shaderDataGenerator.GetNumOutputFloats()];
         int UVIndex = 0;
         for (int i = 0; i < baseChunkVerts.Count; i++) {
-            for (int j = 0; j < baseChunkVerts[i].Length; j++) {
-                Vector3 vert = baseChunkVerts[i][j];
-                if (float.IsNaN(vert.x) || float.IsNaN(vert.y) || float.IsNaN(vert.z) || vert == Vector3.negativeInfinity || vert == Vector3.positiveInfinity) {
-                    Debug.Log("NANI");
-                }
-            }
             baseChunkVerts[i] = celestialBodyGenerator.GeneratePoints(baseChunkVerts[i], ref minSqrRadius, ref maxSqrRadius);
             Vector4[,] batchUVData = shaderDataGenerator.GetValues(baseChunkVerts[i]);
             for (int j = 0; j < batchUVData.GetUpperBound(0) + 1; j++) {
@@ -435,19 +429,8 @@ public class CelestialBodyMeshHandler : MonoBehaviour {
         maxRadius = Mathf.Sqrt(maxSqrRadius);
 
         shaderDataGenerator.SetRadiiInfo(maxRadius, minRadius);
-
         for (int i = 0; i < chunks.Length; i++) {
             for (int j = chunkStartIndexes[i]; j < chunkStartIndexes[i] + chunks[i].vertexMap.Length; j++) {
-                Vector3 vert = baseChunkVerts[j / maxNumVertsPerArray][j % maxNumVertsPerArray];
-                if (float.IsNaN(vert.x) || float.IsNaN(vert.y) || float.IsNaN(vert.z)) {
-                    Debug.Log("what the fuck");
-                }
-                if (vert == Vector3.negativeInfinity) {
-                    Debug.Log("is this motherfucking");
-                }
-                if (vert == Vector3.positiveInfinity) {
-                    Debug.Log("horseshit");
-                }
                 chunks[i].vertexMap[j - chunkStartIndexes[i]] = baseChunkVerts[j / maxNumVertsPerArray][j % maxNumVertsPerArray];
                 for (int k = 0; k < UVData.GetUpperBound(1) + 1; k++) {
                     chunks[i].UVMap[j - chunkStartIndexes[i], k] = UVData[j, k];

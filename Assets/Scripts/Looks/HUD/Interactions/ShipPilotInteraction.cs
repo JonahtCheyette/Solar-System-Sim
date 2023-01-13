@@ -5,12 +5,14 @@ using UnityEngine;
 public class ShipPilotInteraction : MonoBehaviour {
 
     //interaction functionality
-    public float minInteractionDist = 5f;
+    public float minPilotDistance = 5f;
+    public float minLeaveDistance = 5f;
+    public float minDoorDistance = 10f;
+
     private GameObject player;
     private Vector3 shipCameraPosition;
     private ShipController shipController;
-    private ShipDoorController shipDoor;
-    private Vector3 chairPosition = new Vector3(0, 2.21f, 2.46f);
+    private Vector3 chairPosition = new Vector3(0, 2f, 3f);
     private FirstPersonController playerController;
     private bool piloting;
 
@@ -22,20 +24,37 @@ public class ShipPilotInteraction : MonoBehaviour {
     private Quaternion startCameraRotation;
     private int animationLength = 15;
 
+    //Door variables
+    private Vector3 rampStartPosition = new Vector3(0, 1.29f, 7.25f);
+    private Quaternion rampStartRotation = Quaternion.Euler(Vector3.right * 90f);
+    private Vector3 rampPositionStep;
+    private Quaternion rampFinalRotation;
+    private int rampStage;
+    [HideInInspector]
+    public bool doorOpen { private set; get; }
+    private BoxCollider doorCollider;
+    private BoxCollider rampCollider;
+    private GameObject rampObject;
+
     // Start is called before the first frame update
     void Start() {
         player = GameObject.Find("Player");
         shipController = GetComponent<ShipController>();
-        shipDoor = GetComponent<ShipDoorController>();
 
         //find where the camera should be placed by finding the furthest forward collider on the ship
         BoxCollider[] colliders = transform.Find("Colliders").gameObject.GetComponents<BoxCollider>();
         shipCameraPosition = Vector3.forward * float.MinValue;
+        float minZcoord = float.MaxValue;
 
         foreach (BoxCollider c in colliders) {
             if (c.center.z > shipCameraPosition.z) {
                 //this collider is further forward
                 shipCameraPosition = c.center;
+            }
+            if (c.center.z < minZcoord) {
+                //this collider is farther back
+                minZcoord = c.center.z;
+                doorCollider = c;
             }
         }
 
@@ -43,14 +62,26 @@ public class ShipPilotInteraction : MonoBehaviour {
         doingAnimation = false;
         animationStep = 0;
         piloting = false;
+
+        rampObject = transform.Find("Ramp").gameObject;
+        rampCollider = rampObject.GetComponent<BoxCollider>();
+
+        rampPositionStep = (rampObject.transform.localPosition - rampStartPosition) / 10f;
+        rampFinalRotation = rampObject.transform.localRotation;
+
+        rampStage = 0;
+
+        doorOpen = false;
     }
 
     // Update is called once per frame
     void Update() {
         if (!doingAnimation) {
-            Vector3 interactionPosition = transform.TransformPoint(chairPosition);
+            Vector3 pilotPosition = transform.TransformPoint(chairPosition);
+            Vector3 leavePosition = transform.TransformPoint(Vector3.up * 2);
             if (player.activeInHierarchy) {
-                InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", Controls.startPilotingShipKey, interactionPosition, minInteractionDist);
+                InteractionHandler.AddInteractionIfInRange(StartPiloting, "Start Piloting The Spaceship", Controls.startPilotingShipKey, pilotPosition, minPilotDistance);
+                InteractionHandler.AddInteractionIfInRange(LeaveShip, "Leave The Spaceship", Controls.leaveShipKey, leavePosition, minLeaveDistance);
             }
         } else {
             animationStep++;
@@ -64,6 +95,20 @@ public class ShipPilotInteraction : MonoBehaviour {
                     playerController.enabled = true;
                 }
             }
+        }
+
+        if (!shipController.hovering) {
+            doorCollider.enabled = !doorOpen;
+            rampCollider.enabled = doorOpen;
+
+            rampStage += doorOpen ? 1 : -1;
+            rampStage = Mathf.Clamp(rampStage, 0, 10);
+
+            rampObject.transform.localPosition = rampStartPosition + rampPositionStep * rampStage;
+            rampObject.transform.localRotation = Quaternion.Slerp(rampStartRotation, rampFinalRotation, rampStage / 10);
+
+            Vector3 interactionPosition = transform.TransformPoint(doorCollider.center - Vector3.up * doorCollider.size.y / 2f);
+            InteractionHandler.AddInteractionIfInRange(ChangeDoorState, doorOpen ? "Close Ship Door" : "Open Ship Door", Controls.doorKey, interactionPosition, minDoorDistance);
         }
     }
 
@@ -79,7 +124,7 @@ public class ShipPilotInteraction : MonoBehaviour {
         player.SetActive(false);
 
         //shouldn't leave the planet with an open door!
-        shipDoor.Close();
+        Close();
         //turn on the ship
         shipController.piloted = true;
         piloting = true;
@@ -111,5 +156,17 @@ public class ShipPilotInteraction : MonoBehaviour {
             shipController.piloted = false;
             piloting = false;
         }
+    }
+
+    private void LeaveShip() {
+        playerController.transform.position = transform.TransformPoint(Vector3.down * 6);
+    }
+
+    private void ChangeDoorState() {
+        doorOpen = !doorOpen;
+    }
+
+    public void Close() {
+        doorOpen = false;
     }
 }

@@ -13,6 +13,9 @@ public class CelestialBodyPhysics : MonoBehaviour {
     public float mass { get; private set; }
     public Color color;
 
+
+    private CelestialBodyMeshHandler handler;
+
     public void Awake() {
         rb = GetComponent<Rigidbody>();
         mass = (surfaceGravity * Radius() * Radius()) / Universe.gravitationalConstant;
@@ -52,7 +55,9 @@ public class CelestialBodyPhysics : MonoBehaviour {
     }
 
     public float Radius() {
-        CelestialBodyMeshHandler handler = GetComponent<CelestialBodyMeshHandler>();
+        if (handler == null) {
+            handler = GetComponent<CelestialBodyMeshHandler>();
+        }
         if (handler != null) {
             if (handler.celestialBodyGenerator != null) {
                 return handler.celestialBodyGenerator.radius;

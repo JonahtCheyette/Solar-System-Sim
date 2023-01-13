@@ -31,6 +31,7 @@ public class FirstPersonController : MonoBehaviour {
 
     private void Awake() {
         CursorLock.Reset();
+        rigidBody = GetComponent<Rigidbody>();
     }
 
     // Start is called before the first frame update
@@ -38,8 +39,7 @@ public class FirstPersonController : MonoBehaviour {
         cameraT = Camera.main.transform;
         cameraParent = cameraT.parent;
         cameraLocalPosition = cameraT.localPosition;
-        rigidBody = GetComponentInChildren<Rigidbody>();
-        FindStartingPosition();
+        //FindStartingPosition();
     }
 
     // Update is called once per frame
@@ -63,13 +63,10 @@ public class FirstPersonController : MonoBehaviour {
     }
 
     private void CheckIfGrounded() {
-        grounded = false;
         Ray ray = new Ray(transform.position, -transform.up);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 0.1f, groundedMask)) {
-            grounded = true;
-        }
+        grounded = Physics.Raycast(ray, out hit, 0.1f, groundedMask);
     }
 
     private void GetMovementInput() {
@@ -103,13 +100,14 @@ public class FirstPersonController : MonoBehaviour {
 
     private void FindStartingPosition() {
         CelestialBodyPhysics startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
-        Vector3 dirFromPlanetToPlayer = (transform.position - startingPlanet.Position).normalized;
-        rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (1.1f * startingPlanet.Radius());
+        //Vector3 dirFromPlanetToPlayer = (transform.position - startingPlanet.Position).normalized;
+        //rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (1.1f * startingPlanet.Radius());
         rigidBody.velocity = startingPlanet.initialVelocity;
 
-        Vector3 targetDirection = (startingPlanet.transform.position - transform.position).normalized;
+        //Vector3 targetDirection = (startingPlanet.transform.position - transform.position).normalized;
         //rotate so that the player's down points torwards the planet
-        transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
+        //transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
+
     }
 
     public bool Grounded {
