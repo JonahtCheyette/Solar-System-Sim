@@ -110,6 +110,13 @@ public class ShipPilotInteraction : MonoBehaviour {
             Vector3 interactionPosition = transform.TransformPoint(doorCollider.center - Vector3.up * doorCollider.size.y / 2f);
             InteractionHandler.AddInteractionIfInRange(ChangeDoorState, doorOpen ? "Close Ship Door" : "Open Ship Door", Controls.doorKey, interactionPosition, minDoorDistance);
         }
+
+        Vector3 playerRelativePosition = transform.InverseTransformPoint(player.transform.position);
+        if(playerRelativePosition.y < 0 && playerRelativePosition.y > shipController.hoverDist * -2f) {
+            if(playerRelativePosition.x * playerRelativePosition.x + playerRelativePosition.z * playerRelativePosition.z <= shipController.hoverBeamSize) {
+                InteractionHandler.AddInteractionIfInRange(EnterShip, "Go Back to the Ship", Controls.hoverKey, player.transform.position, 100000f);
+            }
+        }
     }
 
     private void StartPiloting() {
@@ -168,5 +175,9 @@ public class ShipPilotInteraction : MonoBehaviour {
 
     public void Close() {
         doorOpen = false;
+    }
+
+    private void EnterShip() {
+        player.transform.position = transform.TransformPoint(Vector3.up * 1.5f);
     }
 }

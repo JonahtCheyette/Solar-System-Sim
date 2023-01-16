@@ -46,7 +46,7 @@ void Generate(uint3 id : SV_DispatchThreadID) { // too many if statements in thi
     if (worleyPlateIndex != numWorleyPoints) {
         radius -= maxWorleyBoost;
         if(secondSmallestDist - minDist >= worleyThreshold) { // on a plate
-            radius += worleyBuffer[worleyPlateIndex].boost * smoothstep(worleyThreshold, worleyThreshold + worleyBlend, secondSmallestDist - minDist);
+            radius += worleyBuffer[worleyPlateIndex].boost * ((1 + smoothstep(worleyThreshold, worleyThreshold + worleyBlend, secondSmallestDist - minDist)) / 2);
             radius += worleyBuffer[worleyPlateIndex].multiplier * (worleyThreshold - (minDist - secondSmallestDist));
         }
     }

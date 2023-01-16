@@ -33,6 +33,18 @@ public class ShipController : MonoBehaviour {
     private CelestialBodyPhysics hoverBase;
     private Vector3 hoverOffset;
 
+    private bool goingToHoverPosition;
+    private const int hoverAnimationLength = 10;
+    private int hoverAnimationStep = 0;
+    private Quaternion finalHoverRotation;
+    private Quaternion initialHoverRotation;
+    private Vector3 initialHoverPosition;
+
+    [Header("Hover Beam Stuff")]
+    public Transform hoverBeam;
+    [Range(0, 3)]
+    public float hoverBeamSize;
+
     // Start is called before the first frame update
     private void Awake() {
         pilotInteraction = GetComponent<ShipPilotInteraction>();
@@ -49,27 +61,41 @@ public class ShipController : MonoBehaviour {
         targetRot = transform.rotation;
         smoothedRot = transform.rotation;
         collidingWith = new List<string>();
+        goingToHoverPosition = false;
+        hoverBeam.localScale = new Vector3(hoverBeamSize, hoverDist * 2, hoverBeamSize);
+        hoverBeam.localPosition = Vector3.down * (hoverDist * 2 - 1);
+        hoverBeam.gameObject.SetActive(true);
     }
 
     // Update is called once per frame
     void Update() {
-        if (piloted) {
-            if (!hovering) {
-                HandleMovement();
-
-                CheckIfShouldHover();
-            } else {
-                CheckIfShouldLeave();
-
-                CheckToStopHovering();
-            }
-        }
         CheckForCrash();
-        if (hovering) {
-            rigidBody.freezeRotation = true;
-            Hover();
+        if (!goingToHoverPosition) {
+            if (piloted) {
+                if (!hovering) {
+                    HandleMovement();
+
+                    CheckIfShouldHover();
+                } else {
+                    CheckIfShouldLeave();
+
+                    CheckToStopHovering();
+                }
+            }
+            if (hovering) {
+                rigidBody.freezeRotation = true;
+                Hover();
+            } else {
+                rigidBody.freezeRotation = false;
+            }
         } else {
-            rigidBody.freezeRotation = false;
+            hoverAnimationStep++;
+
+            transform.position += (hoverBase.transform.position + hoverOffset - initialHoverPosition) / hoverAnimationLength;
+            transform.rotation = Quaternion.Slerp(initialHoverRotation, finalHoverRotation, ((float)hoverAnimationStep / hoverAnimationLength));
+            if(hoverAnimationStep == hoverAnimationLength) {
+                goingToHoverPosition = false;
+            }
         }
     }
 
@@ -133,18 +159,25 @@ public class ShipController : MonoBehaviour {
         if (Input.GetKeyDown(Controls.hoverKey) && CanHover()) {
             hoverBase = GravityHandler.GetClosestPlanet(transform.position);
             float hoverRadius = hoverBase.Radius() + hoverDist;
-            hoverOffset = (transform.position - hoverBase.Position).normalized * hoverRadius;
-            transform.position = hoverBase.Position + hoverOffset;
-            transform.rotation *= Quaternion.FromToRotation(-transform.up, -hoverOffset / hoverRadius);
-            rigidBody.velocity = hoverBase.velocity;
+            hoverOffset = (transform.position - hoverBase.transform.position).normalized * hoverRadius;
 
+            initialHoverRotation = transform.rotation;
+            finalHoverRotation = Quaternion.FromToRotation(Vector3.up, hoverOffset / hoverRadius);
+            initialHoverPosition = transform.position;
+
+            hoverAnimationStep = 0;
+
+            goingToHoverPosition = true;
             hovering = true;
+            hoverBeam.gameObject.SetActive(true);
         }
     }
 
     private void Hover() {
-        transform.position = hoverBase.Position + hoverOffset;
+        transform.position = hoverBase.transform.position + hoverOffset;
         rigidBody.velocity = hoverBase.velocity;
+        targetRot = transform.rotation;
+        smoothedRot = transform.rotation;
     }
 
     private void CheckIfShouldLeave() {
@@ -157,6 +190,7 @@ public class ShipController : MonoBehaviour {
         if (Input.GetKeyDown(Controls.hoverKey)) {
             rigidBody.velocity = hoverBase.velocity;
             hovering = false;
+            hoverBeam.gameObject.SetActive(false);
         }
     }
 
@@ -188,15 +222,6 @@ public class ShipController : MonoBehaviour {
         transform.position = hoverBase.Position + hoverOffset;
         transform.rotation *= Quaternion.FromToRotation(-transform.up, -hoverOffset.normalized);
         rigidBody.velocity = hoverBase.velocity;
-        /*
-        CelestialBodyPhysics startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
-        Vector3 dirFromPlanetToShip = (transform.position - startingPlanet.Position).normalized;
-        Vector3 targetDirection = -dirFromPlanetToShip;
-
-        transform.position = startingPlanet.Position + dirFromPlanetToShip * (1.3f * startingPlanet.Radius());
-        transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
-        //rigidBody.velocity = startingPlanet.initialVelocity;
-        */
 
         hovering = true;
     }
@@ -204,11 +229,11 @@ public class ShipController : MonoBehaviour {
     private void PlacePlayer() {
         FirstPersonController player = FindObjectOfType<FirstPersonController>();
         player.transform.position = transform.TransformPoint(Vector3.up * 1.5f);
-        player.rb.velocity = GravityHandler.GetClosestPlanet(transform.position).initialVelocity;
     }
 
     private void CheckForCrash() {
         if(collidingWith.Count > 0) {
+            print("wth");
             Application.Quit(); // will have to replace with proper death
         }
     }

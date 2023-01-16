@@ -31,7 +31,6 @@ public class FirstPersonController : MonoBehaviour {
 
     private void Awake() {
         CursorLock.Reset();
-        rigidBody = GetComponent<Rigidbody>();
     }
 
     // Start is called before the first frame update
@@ -39,7 +38,7 @@ public class FirstPersonController : MonoBehaviour {
         cameraT = Camera.main.transform;
         cameraParent = cameraT.parent;
         cameraLocalPosition = cameraT.localPosition;
-        //FindStartingPosition();
+        rigidBody = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
@@ -96,18 +95,6 @@ public class FirstPersonController : MonoBehaviour {
         if (Input.GetKeyDown(Controls.jumpKey) && grounded) {
             rigidBody.AddForce(transform.up * jumpForce);
         }
-    }
-
-    private void FindStartingPosition() {
-        CelestialBodyPhysics startingPlanet = GravityHandler.GetClosestPlanet(transform.position);
-        //Vector3 dirFromPlanetToPlayer = (transform.position - startingPlanet.Position).normalized;
-        //rigidBody.position = startingPlanet.Position + dirFromPlanetToPlayer * (1.1f * startingPlanet.Radius());
-        rigidBody.velocity = startingPlanet.initialVelocity;
-
-        //Vector3 targetDirection = (startingPlanet.transform.position - transform.position).normalized;
-        //rotate so that the player's down points torwards the planet
-        //transform.rotation *= Quaternion.FromToRotation(-transform.up, targetDirection);
-
     }
 
     public bool Grounded {
