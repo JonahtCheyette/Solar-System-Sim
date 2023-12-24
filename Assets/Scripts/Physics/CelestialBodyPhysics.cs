@@ -13,7 +13,6 @@ public class CelestialBodyPhysics : MonoBehaviour {
     public float mass { get; private set; }
     public Color color;
 
-
     private CelestialBodyMeshHandler handler;
 
     public void Awake() {
