@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class Plant : MonoBehaviour {
@@ -12,8 +13,18 @@ public class Plant : MonoBehaviour {
     private List<Branch> branches;
     private float trunkSize;
     private float trunkHeight;
+    private const int resolution = 8;
+
+    //growth bits
+    private float completionPercent;
+    private const float growthSpeed = 0.001f;
+    private bool meshHasBeenGenerated;
+    private List<BranchMeshHandler> branchMeshHandlers;
 
     private void Start() {
+        branchMeshHandlers = new List<BranchMeshHandler>();
+        meshHasBeenGenerated = false;
+
         CelestialBodyPhysics planet = GravityHandler.GetClosestPlanet(transform.position);
         planetMaterial = planet.gameObject.GetComponent<MeshRenderer>().material;
 
@@ -33,32 +44,87 @@ public class Plant : MonoBehaviour {
 
         leafColor = Color.HSVToRGB(planetHue, planetSat, planetVal);
         barkColor = Color.HSVToRGB(Random.Range(50,60) / 360f, Random.Range(0.5f, 0.6f), Random.Range(0, 0.4f));
+
+        completionPercent = 0;
+
+
+        float sizeRatio = 0.7f;
+        Vector2Int bendRanges = new Vector2Int(5, 2);
+
+        BranchGenInfo info = new BranchGenInfo();
+        info.start = Vector3.zero;
+        info.end = trunkHeight * transform.up;
+        info.planeOfAttatchment = transform.up;
+        info.endSizes = new Vector2(trunkSize, trunkSize * sizeRatio);
+        info.bendParameters = new Vector3(0.2f, 0.1f, 0.1f);
+        info.numBends = bendRanges.x + Mathf.FloorToInt(Random.Range(0, 1) * (bendRanges.y - bendRanges.x + 1));
+        if (info.numBends > bendRanges.y) {
+            info.numBends = bendRanges.y;
+        }
+        info.startingPercent = 0;
+        info.hasLeaves = false;
+        GenerateBranch(info, bendRanges, sizeRatio, 4, 0.1f, 0.6f, 0.2f, 5, 5);
     }
 
     // Update is called once per frame
     void Update() {
-        
+        if (completionPercent < 1) {
+            completionPercent += growthSpeed;
+            completionPercent = Mathf.Clamp01(completionPercent);
+            Mesh treeMesh = GetComponent<MeshFilter>().mesh;
+            if(treeMesh == null) {
+                treeMesh = new Mesh();
+            }
+            if (!meshHasBeenGenerated) {
+                List<Vector3> vertices = new List<Vector3>();
+                List<int> tris = new List<int>();
+                for (int i = 0; i < branches.Count; i++) {
+                    branchMeshHandlers[i] = new BranchMeshHandler(branches[i], resolution);
+                    (Vector3[], int[]) data = branchMeshHandlers[i].GetMeshData(completionPercent);
+                    for (int j = 0; j < data.Item2.Length; j++) {
+                        tris.Add(data.Item2[j] + vertices.Count);
+                    }
+                    vertices.AddRange(data.Item1);
+                }
+                treeMesh.vertices = vertices.ToArray();
+                treeMesh.triangles = tris.ToArray();
+                meshHasBeenGenerated = true;
+            } else {
+                List<Vector3> vertices = new List<Vector3>();
+                for (int i = 0; i < branchMeshHandlers.Count; i++) {
+                    vertices.AddRange(branchMeshHandlers[i].GetVertexData(completionPercent));
+                }
+                treeMesh.vertices = vertices.ToArray();
+            }
+        }
     }
 
-    private void GenerateBranch(Vector3 bottom, Vector3 top, Vector3 planeOfAttatchment, float size, float sizeRatio, float bendiness, float bendPosJiggle, Vector2Int bendRanges, int branchiness, float branchPosJiggle, float branchLengthMultiplier, float branchLengthMultiplierJiggle, int depth, int maxDepth) {
+
+    private void GenerateBranch(BranchGenInfo info, Vector2Int bendRanges, float sizeRatio, int branchiness, float branchPosJiggle, float branchLengthMultiplier, float branchLengthMultiplierJiggle, int depth, int maxDepth) {
         if(depth >= 0) {
-            int numBends = bendRanges.x + Mathf.FloorToInt(Random.Range(0, 1) * (bendRanges.y - bendRanges.x + 1));
-            if(numBends > bendRanges.y) {
-                numBends = bendRanges.y;
-            }
-            Vector2 sizePair = new Vector2(size, (depth == 0) ? 0 : size * sizeRatio);
-            float bbPosThresh = 1 - ((float)maxDepth - depth) / (maxDepth + 1); //bb for bend & branch
-            Branch generatedBranch = new Branch(bottom, top, planeOfAttatchment, sizePair, bendiness, bendPosJiggle, bbPosThresh, numBends);
+            Branch generatedBranch = new Branch(info);
             branches.Add(generatedBranch);
+            
+            float bbPosThresh = 1 - ((float)maxDepth - depth) / (maxDepth + 1); //bb for bend & branch
+            float finalStartingPercent = (depth == maxDepth) ? 0 : info.startingPercent;
+            
             if(depth > 0) {
                 //new branches based on this branch
                 int numBranches = Mathf.Max(1, Random.Range(1, Mathf.FloorToInt((branchiness + 1) * (((maxDepth * maxDepth) + (maxDepth - depth)*(maxDepth - depth) - (maxDepth - 1)*(maxDepth - 1))/(maxDepth * maxDepth)))));
                 for (int i = 0; i < numBranches; i++) {
+
+                    BranchGenInfo derivedInfo = new BranchGenInfo();
+                    derivedInfo.bendParameters = info.bendParameters;
+                    derivedInfo.numBends = bendRanges.x + Mathf.FloorToInt(Random.Range(0, 1) * (bendRanges.y - bendRanges.x + 1));
+                    if (derivedInfo.numBends > bendRanges.y) {
+                        derivedInfo.numBends = bendRanges.y;
+                    }
+
                     float branchPoint;
                     if (bbPosThresh != 0) {
-                        branchPoint = bbPosThresh + i * (1 - bbPosThresh) / (numBends + 1) + Random.Range(-branchPosJiggle, branchPosJiggle) / 2;
+                        branchPoint = bbPosThresh + i * (1 - bbPosThresh) / (derivedInfo.numBends + 1) + Random.Range(-branchPosJiggle, branchPosJiggle) / 2;
                     } else {
-                        branchPoint = (i + 1) / (numBends + 1) + Random.Range(-branchPosJiggle, branchPosJiggle) / 2;
+                        branchPoint = (i + 1) / (derivedInfo.numBends + 1) + Random.Range(-branchPosJiggle, branchPosJiggle) / 2;
                     }
                     branchPoint = Mathf.Clamp(branchPoint, bbPosThresh, 1);
                     int endingIndex = generatedBranch.bendPoints.Length + 1;
@@ -73,15 +139,25 @@ public class Plant : MonoBehaviour {
                     Vector3 branchStart = generatedBranch.points[endingIndex - 1] + (generatedBranch.points[endingIndex] - generatedBranch.points[endingIndex - 1]) * (branchPoint - branchSegStart) / (branchSegEnd - branchSegStart);
                     float branchBaseSize = generatedBranch.pointMaxSizes[endingIndex - 1] + (generatedBranch.pointMaxSizes[endingIndex] - generatedBranch.pointMaxSizes[endingIndex - 1]) * (branchPoint - branchSegStart) / (branchSegEnd - branchSegStart);
 
-                    Vector3 branchDir = (top - bottom).normalized;
+                    Vector3 branchDir = (info.end - info.start).normalized;
                     Vector3 perpendicular = Vector3.Cross(branchDir, (branchDir == Vector3.up || branchDir == Vector3.down) ? Vector3.forward : Vector3.up).normalized;
                     branchDir = MakeQuaternion(perpendicular, Random.Range(0.1f, Mathf.PI / 2)) * branchDir;
-                    branchDir = MakeQuaternion(top - bottom, Random.Range(0, 2 * Mathf.PI)) * branchDir;
+                    branchDir = MakeQuaternion(info.end - info.start, Random.Range(0, 2 * Mathf.PI)) * branchDir;
 
                     float lengthMultiplier = branchLengthMultiplier + Random.Range(-branchLengthMultiplierJiggle / 2, branchLengthMultiplierJiggle / 2);
                     lengthMultiplier = Mathf.Clamp01(lengthMultiplier);
-                    Vector3 branchEnd = branchStart + branchDir * ((top - bottom).magnitude * lengthMultiplier);
-                    GenerateBranch(branchStart, branchEnd, Vector3.Cross(Vector3.Cross(branchDir, top - bottom), top - bottom), branchBaseSize, sizeRatio, bendiness, bendPosJiggle, bendRanges, branchiness, branchPosJiggle, branchLengthMultiplier, branchLengthMultiplierJiggle, depth - 1, maxDepth);
+                    Vector3 branchEnd = branchStart + branchDir * ((info.end - info.start).magnitude * lengthMultiplier);
+
+                    float percentageStartingPoint = finalStartingPercent + ((100 - finalStartingPercent) * branchPoint);
+
+                    derivedInfo.start = branchStart;
+                    derivedInfo.end = branchEnd;
+                    derivedInfo.planeOfAttatchment = perpendicular;
+                    derivedInfo.endSizes = new Vector2(branchBaseSize, (depth == 1) ? 0 : branchBaseSize * sizeRatio);
+                    derivedInfo.startingPercent = percentageStartingPoint;
+                    derivedInfo.hasLeaves = false;
+
+                    GenerateBranch(derivedInfo, bendRanges, sizeRatio, branchiness, branchPosJiggle, branchLengthMultiplier, branchLengthMultiplierJiggle, depth - 1, maxDepth);
                 }
             }
         }
@@ -94,37 +170,204 @@ public class Plant : MonoBehaviour {
     }
 
 
+    private struct BranchMeshHandler {
+        private Vector3[] vertexEndPositions;
+        private int[] tris;
+        private float[] ringMaxSizes;
+        private float[] ringPercentBuffers;
+        private float[] ringFinishingPercents;
+        private float startingPercent;
+        private const float branchMaxPercentBuffer = 0.05f; // required for the branches, since the ends of the branches aren't required to be points
+        private Vector3 branchX;
+        private Vector3 branchY;
+        private Vector3 branchDir;
+        private int resolution;
+
+        public BranchMeshHandler(Branch derived, int resolution) {
+            this.resolution = resolution;
+            vertexEndPositions = new Vector3[derived.points.Length * resolution];
+            tris = new int[3*(2*(resolution - 2) + (derived.points.Length - 1) * resolution * 2)];
+            ringMaxSizes = derived.pointMaxSizes;
+            startingPercent = derived.startingPercent;
+
+            for (int i = 0; i < ringMaxSizes.Length; i++) {
+                ringPercentBuffers[i] = branchMaxPercentBuffer * ringMaxSizes[i] / ringMaxSizes[0];
+                ringFinishingPercents[i] = ringPercentBuffers[i] + (derived.points[i] - derived.points[0]).magnitude / (derived.points[derived.points.Length - 1] - derived.points[0]).magnitude;
+            }
+
+            for (int i = 0; i < ringMaxSizes.Length; i++) {
+                ringPercentBuffers[i] /= ringFinishingPercents[ringFinishingPercents.Length - 1];
+                ringFinishingPercents[i] /= ringFinishingPercents[ringFinishingPercents.Length - 1]; // a little gross, but I want the #s between 0 and 1.
+            }
+
+            branchDir = (derived.points[derived.points.Length] - derived.points[0]).normalized;
+            branchX = Vector3.Cross(branchDir, (branchDir == Vector3.up || branchDir == Vector3.down) ? Vector3.forward : Vector3.up).normalized;
+            branchY = Vector3.Cross(branchDir, branchX);
+
+            float angleIncrement = 2 * Mathf.PI / resolution;
+
+            int triIndex = 0;
+            for (int i = 0; i < vertexEndPositions.Length; i++) {
+                int ringIndex = i / resolution;
+                int indexOnRing = i % resolution;
+                vertexEndPositions[i] = derived.points[ringIndex] + ringMaxSizes[ringIndex] * (branchX * Mathf.Cos(angleIncrement * indexOnRing) + branchY * Mathf.Sin(angleIncrement * indexOnRing));
+                
+                if(ringIndex < derived.points.Length - 1) {
+                    tris[triIndex] = i;
+                    tris[triIndex + 1] = i - 1 + resolution;
+                    tris[triIndex + 2] = i + resolution;
+                    if (indexOnRing == 0) {
+                        tris[triIndex + 1] += resolution;
+                    }
+                    triIndex += 3;
+                    tris[triIndex] = i;
+                    tris[triIndex + 1] = i + resolution;
+                    tris[triIndex + 2] = i + 1;
+                    if(indexOnRing == resolution - 1) {
+                        tris[indexOnRing] = ringIndex * resolution;
+                    }
+                    triIndex += 3;
+                }
+            }
+
+            for (int i = 0; i < 2 * (resolution - 2); i++) { // attatching the top and bottom caps
+                bool bottom = i < resolution - 2;
+                tris[triIndex] = bottom ? 0 : resolution * (derived.points.Length - 1);
+                tris[bottom ? triIndex + 2 : triIndex + 1] = tris[triIndex] + 1 + (i % (resolution - 2));
+                tris[bottom ? triIndex + 1 : triIndex + 2] = tris[bottom ? triIndex + 2 : triIndex + 1] + 1; //I have to do a ton of switching due to winding order
+                triIndex += 3;
+            }
+        }
+
+
+        public (Vector3[], int[]) GetMeshData(float completionPercent) {
+            if (completionPercent == 1) {
+                return (vertexEndPositions, tris);
+            }
+            float branchPercent = (completionPercent - startingPercent) / (1 - startingPercent);
+            Vector3[] returnVal = new Vector3[vertexEndPositions.Length];
+            vertexEndPositions.CopyTo(returnVal, 0);
+            float angleIncrement = 2 * Mathf.PI / resolution;
+            for (int i = 0; i < ringFinishingPercents.Length; i++) {
+                if (i != ringFinishingPercents.Length - 1) {
+                    if (branchPercent >= ringFinishingPercents[i] - ringPercentBuffers[i] && branchPercent < ringFinishingPercents[i + 1]) {
+                        //end of the branch growing out from the last ring
+                        Vector3 gap = returnVal[i * resolution] - returnVal[(i + 1) * resolution];
+                        for (int j = 0; j < resolution; j++) {
+                            returnVal[(i + 1) * resolution + j] += gap * (1 - (branchPercent - ringFinishingPercents[i] + ringPercentBuffers[i]) / (ringFinishingPercents[i + 1] - ringFinishingPercents[i] + ringPercentBuffers[i]));
+                        }
+                    }
+                }
+
+                if (branchPercent < ringFinishingPercents[i]) {
+                    //closing the ring entirely
+                    for (int j = 0; j < resolution; j++) {
+                        returnVal[i * resolution + j] -= ringMaxSizes[i] * (branchX * Mathf.Cos(angleIncrement * j) + branchY * Mathf.Sin(angleIncrement * j));
+                    }
+                    if(branchPercent >= ringFinishingPercents[i] - ringPercentBuffers[i]) {
+                        //ring needs to finish growing, open it up a little
+                        for (int j = 0; j < resolution; j++) {
+                            returnVal[i * resolution + j] += ((branchPercent - ringFinishingPercents[i] + ringPercentBuffers[i]) / ringPercentBuffers[i]) * ringMaxSizes[i] * (branchX * Mathf.Cos(angleIncrement * j) + branchY * Mathf.Sin(angleIncrement * j));
+                        }
+                    }
+                }
+            }
+
+            return (returnVal, tris);
+        }
+
+
+        public Vector3[] GetVertexData(float completionPercent) {
+            if (completionPercent == 1) {
+                return vertexEndPositions;
+            }
+            float branchPercent = (completionPercent - startingPercent) / (1 - startingPercent);
+            Vector3[] returnVal = new Vector3[vertexEndPositions.Length];
+            vertexEndPositions.CopyTo(returnVal, 0);
+            float angleIncrement = 2 * Mathf.PI / resolution;
+            for (int i = 0; i < ringFinishingPercents.Length; i++) {
+                if (i != ringFinishingPercents.Length - 1) {
+                    if (branchPercent >= ringFinishingPercents[i] - ringPercentBuffers[i] && branchPercent < ringFinishingPercents[i + 1]) {
+                        //end of the branch growing out from the last ring
+                        Vector3 gap = returnVal[i * resolution] - returnVal[(i + 1) * resolution];
+                        for (int j = 0; j < resolution; j++) {
+                            returnVal[(i + 1) * resolution + j] += gap * (1 - (branchPercent - ringFinishingPercents[i] + ringPercentBuffers[i]) / (ringFinishingPercents[i + 1] - ringFinishingPercents[i] + ringPercentBuffers[i]));
+                        }
+                    }
+                }
+
+                if (branchPercent < ringFinishingPercents[i]) {
+                    //closing the ring entirely
+                    for (int j = 0; j < resolution; j++) {
+                        returnVal[i * resolution + j] -= ringMaxSizes[i] * (branchX * Mathf.Cos(angleIncrement * j) + branchY * Mathf.Sin(angleIncrement * j));
+                    }
+                    if (branchPercent >= ringFinishingPercents[i] - ringPercentBuffers[i]) {
+                        //ring needs to finish growing, open it up a little
+                        for (int j = 0; j < resolution; j++) {
+                            returnVal[i * resolution + j] += ((branchPercent - ringFinishingPercents[i] + ringPercentBuffers[i]) / ringPercentBuffers[i]) * ringMaxSizes[i] * (branchX * Mathf.Cos(angleIncrement * j) + branchY * Mathf.Sin(angleIncrement * j));
+                        }
+                    }
+                }
+            }
+
+            return returnVal;
+        }
+    }
+
+
     private struct Branch {
         public Vector3[] points;
         public float[] pointMaxSizes;
         public float[] bendPoints;
         public Vector3 planeOfAttatchment;
+        public bool hasLeaves;
+        public float startingPercent;
 
-        public Branch(Vector3 a, Vector3 b, Vector3 planeOfAttatchment, Vector2 endSizes, float bendiness, float bendPosJiggle, float bendPosThresh, int numBends) {
-            points = new Vector3[numBends + 2];
-            points[0] = a;
-            points[numBends + 1] = b;
-            pointMaxSizes = new float[numBends + 2];
-            pointMaxSizes[0] = endSizes.x;
-            pointMaxSizes[numBends + 1] = endSizes.y;
-            this.planeOfAttatchment = planeOfAttatchment.normalized;
-            bendPoints = new float[numBends];
+        public Branch(BranchGenInfo info) {
+            points = new Vector3[info.numBends + 2];
+            points[0] = info.start;
+            points[info.numBends + 1] = info.end;
+            pointMaxSizes = new float[info.numBends + 2];
+            pointMaxSizes[0] = info.endSizes.x;
+            pointMaxSizes[info.numBends + 1] = info.endSizes.y;
+            planeOfAttatchment = info.planeOfAttatchment.normalized;
+            bendPoints = new float[info.numBends];
+            hasLeaves = info.hasLeaves;
+            startingPercent = info.startingPercent;
 
-            Vector3 branchDirection = (b - a).normalized;
+            Vector3 branchDirection = (points[info.numBends + 1] - points[0]).normalized;
             Vector3 branchX = Vector3.Cross(branchDirection, (branchDirection == Vector3.up || branchDirection == Vector3.down) ? Vector3.forward : Vector3.up).normalized;
             Vector3 branchY = Vector3.Cross(branchDirection, branchX);
-            for (int i = 0; i < numBends; i++) {
-                if (bendPosThresh != 0) {
-                    bendPoints[i] = bendPosThresh + i * (1 - bendPosThresh) / (numBends + 1) + Random.Range(-bendPosJiggle, bendPosJiggle) / 2;
+            for (int i = 0; i < info.numBends; i++) {
+                if (info.bendParameters.z != 0) {
+                    bendPoints[i] = info.bendParameters.z + i * (1 - info.bendParameters.z) / (info.numBends + 1);
                 } else {
-                    bendPoints[i] = (i + 1) / (numBends + 1) + Random.Range(-bendPosJiggle, bendPosJiggle) / 2;
+                    bendPoints[i] = (i + 1) / (info.numBends + 1);
                 }
-                bendPoints[i] = Mathf.Clamp(bendPoints[i], bendPosThresh, 1);
+                bendPoints[i] += Random.Range(-info.bendParameters.y, info.bendParameters.y) / 2;
+                bendPoints[i] = Mathf.Clamp(bendPoints[i], info.bendParameters.z, 1);
                 float angle = Random.Range(0, 2 * Mathf.PI);
-                float displacement = Random.Range(0, bendiness * (endSizes.x + endSizes.y)/2);
-                points[i + 1] = a + (b - a) * bendPoints[i] + (branchX * Mathf.Cos(angle) + branchY * Mathf.Sin(angle)) * displacement;
-                pointMaxSizes[i + 1] = endSizes.x + (endSizes.y - endSizes.x) * bendPoints[i];
+                float displacement = Random.Range(0, info.bendParameters.x * (info.endSizes.x + info.endSizes.y)/2);
+                points[i + 1] = info.start + (info.end - info.start) * bendPoints[i] + (branchX * Mathf.Cos(angle) + branchY * Mathf.Sin(angle)) * displacement;
+                pointMaxSizes[i + 1] = info.endSizes.x + (info.endSizes.y - info.endSizes.x) * bendPoints[i];
             }
         }
+    }
+
+
+    private struct BranchGenInfo {
+        public Vector3 start;
+        public Vector3 end;
+        public Vector3 planeOfAttatchment;
+        public Vector2 endSizes;
+        public Vector3 bendParameters;
+        /*bendiness, bendPosJiggle, bendPosThresh. 
+         * How much the bends are shifted around horizontally (assuming the branch is vertical) as a percentage vs total height, 
+         * how much the bends are shifted around vertically (as a percentage of total height), 
+         * what is the lowest spot on the branch a bend can be
+        */
+        public int numBends;
+        public float startingPercent; //when should this branch start appearing, as a percentage of total tree growth. All branches are assumed to end at 100%
+        public bool hasLeaves;
     }
 }
