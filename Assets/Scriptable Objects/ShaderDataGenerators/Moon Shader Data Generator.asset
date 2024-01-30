@@ -19,8 +19,8 @@ MonoBehaviour:
   scale: 54.4
   persistance: 0.58
   lacunarity: 2
-  numEjectaCraters: 10
+  numEjectaCraters: 4
   ejectaRadiusThreshold: 5
   warpScales:
-  - 17
+  - 22.95
   - 14.4

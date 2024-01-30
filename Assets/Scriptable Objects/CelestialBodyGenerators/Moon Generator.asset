@@ -32,7 +32,7 @@ MonoBehaviour:
   detailScale: 2
   detailPersistance: 0.5
   detailLacunarity: 2
-  ridgeMultiplier: -2.24
+  ridgeMultiplier: 11.5
   ridgeOctaves: 8
   ridgeScale: 0.67
   ridgePersistance: 0.5

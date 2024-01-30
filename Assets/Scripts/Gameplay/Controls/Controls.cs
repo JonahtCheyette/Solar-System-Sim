@@ -4,6 +4,8 @@ public static class Controls {
     //player controls
     public static KeyCode jumpKey = KeyCode.Space;
     public static KeyCode flashlightKey = KeyCode.F;
+    public static KeyCode seedKey = KeyCode.CapsLock;
+    public static KeyCode sprintKey = KeyCode.LeftShift;
 
     //hud controls
     public static KeyCode clearLockOn = KeyCode.Z;

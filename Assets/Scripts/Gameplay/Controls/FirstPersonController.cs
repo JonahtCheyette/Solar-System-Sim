@@ -10,9 +10,15 @@ public class FirstPersonController : MonoBehaviour {
     public float walkSpeed = 5f;
     public float runSpeed = 10f;
     public float jumpForce = 220f;
+    public float seedThrowingForce = 100f;
+    public GameObject seedPrefab;
+
+    private int seedCooldown;
+    private const int seedCooldownMax = 100;
 
     //decides what counts as things the player can be grounded on
     public LayerMask groundedMask;
+    public LayerMask spaceShipMask;// I want to be able to check if the player is grounded on the spaceship
 
     private Rigidbody rigidBody;
 
@@ -26,11 +32,13 @@ public class FirstPersonController : MonoBehaviour {
     private Transform cameraParent;
 
     private bool grounded;
+    private bool onSpaceShip;
 
     private Vector3 targetMoveAmount;
 
     private void Awake() {
         CursorLock.Reset();
+        seedCooldown = 0;
     }
 
     // Start is called before the first frame update
@@ -45,6 +53,7 @@ public class FirstPersonController : MonoBehaviour {
     private void Update() {
         CursorLock.HandleCursor();
         GetMovementInput();
+        CheckThrowing();
         Jump();
         CheckIfGrounded();
     }
@@ -64,8 +73,10 @@ public class FirstPersonController : MonoBehaviour {
     private void CheckIfGrounded() {
         Ray ray = new Ray(transform.position, -transform.up);
         RaycastHit hit;
-
-        grounded = Physics.Raycast(ray, out hit, 0.1f, groundedMask);
+        
+        bool onGround = Physics.Raycast(ray, out hit, 0.1f, groundedMask);
+        onSpaceShip = Physics.Raycast(ray, out hit, 0.1f, spaceShipMask);
+        grounded = onGround || onSpaceShip;
     }
 
     private void GetMovementInput() {
@@ -82,13 +93,23 @@ public class FirstPersonController : MonoBehaviour {
             Vector3 moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
             //running/walking
             targetMoveAmount = moveDir;
-            if (Input.GetKey(KeyCode.LeftShift)) {
+            if (Input.GetKey(Controls.sprintKey)) {
                 targetMoveAmount *= runSpeed;
             } else {
                 targetMoveAmount *= walkSpeed;
             }
         }
         moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, 0.15f);
+    }
+
+    private void CheckThrowing() {
+        seedCooldown--;
+        seedCooldown = Mathf.Clamp(seedCooldown, 0, seedCooldownMax);
+        if(grounded && !onSpaceShip && seedCooldown == 0 && Input.GetKeyDown(Controls.seedKey)) {
+            seedCooldown = seedCooldownMax;
+            GameObject seed = Instantiate(seedPrefab, transform.position + transform.forward + transform.up * 5, transform.rotation);
+            seed.GetComponent<Rigidbody>().velocity = rigidBody.velocity + cameraT.forward * seedThrowingForce;
+        }
     }
 
     private void Jump() {
@@ -100,6 +121,12 @@ public class FirstPersonController : MonoBehaviour {
     public bool Grounded {
         get {
             return grounded;
+        }
+    }
+
+    public bool OnSpaceShip {
+        get {
+            return onSpaceShip;
         }
     }
 
